@@ -6,6 +6,7 @@ config.ini
 # 忽略整个文件夹（末尾加 /）
 3Drone_fit/
 2Drone_fit/
+ref_page/
 
 # 忽略特定类型的文件（用通配符 *）
 *.txt       # 忽略所有 .txt 结尾的文件
