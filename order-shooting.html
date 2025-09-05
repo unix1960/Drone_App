@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>订单拍摄 - 无人机自助打卡</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#1E40AF',
+                        accent: '#06B6D4',
+                        dark: '#1E293B',
+                        light: '#F8FAFC',
+                        'gray-medium': '#64748B',
+                        'gray-light': '#E2E8F0',
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-dark">
+    <!-- 页面容器 -->
+    <div class="min-h-screen">
+        <!-- 顶部状态栏 -->
+        <div class="bg-dark p-4 text-white flex justify-between items-center">
+            <div class="flex items-center">
+                <button id="backBtn" class="mr-3">
+                    <i class="fa fa-arrow-left"></i>
+                </button>
+                <div>
+                    <h1 class="text-lg font-bold">订单拍摄</h1>
+                    <div class="text-xs text-white/70">订单号: DX20230615001</div>
+                </div>
+            </div>
+            <div class="flex items-center">
+                <span class="drone-status online mr-3">在线</span>
+                <div class="text-sm">
+                    <i class="fa fa-battery-three-quarters text-success"></i> 85%
+                </div>
+            </div>
+        </div>
+
+        <!-- 视频预览区域 -->
+        <div class="relative">
+            <div class="aspect-video bg-black">
+                <img src="https://picsum.photos/id/1036/800/450" alt="无人机视角" class="w-full h-full object-cover">
+                <!-- 实际应用中这里应该是视频流 -->
+            </div>
+            
+            <!-- 视频上的状态信息 -->
+            <div class="absolute top-4 left-4 bg-black/50 text-white px-3 py-1 rounded-full text-xs">
+                <i class="fa fa-circle text-red-500 animate-pulse"></i> 实时直播
+            </div>
+            
+            <div class="absolute top-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-xs">
+                <i class="fa fa-signal"></i> 信号强度: 良好
+            </div>
+            
+            <div class="absolute bottom-4 left-4 right-4 flex justify-between">
+                <div class="bg-black/50 text-white px-3 py-1 rounded-full text-xs">
+                    <i class="fa fa-map-marker"></i> 福州鼓山景区 - 涌泉寺
+                </div>
+                <div class="bg-black/50 text-white px-3 py-1 rounded-full text-xs">
+                    <i class="fa fa-clock-o"></i> 飞行时间: 05:23
+                </div>
+            </div>
+        </div>
+
+        <!-- 拍摄控制区域 -->
+        <div class="bg-dark text-white p-4">
+            <!-- 拍摄进度 -->
+            <div class="mb-4">
+                <div class="flex justify-between text-sm mb-1">
+                    <span>拍摄进度</span>
+                    <span>2/5 景点</span>
+                </div>
+                <div class="progress-bar bg-gray-700">
+                    <div class="progress-bar-fill" style="width: 40%"></div>
+                </div>
+            </div>
+
+            <!-- 当前拍摄信息 -->
+            <div class="tech-border border-accent/30 p-3 rounded-lg mb-4">
+                <div class="flex justify-between items-center mb-2">
+                    <div class="font-medium">当前拍摄</div>
+                    <div class="tech-badge">景点 2/5</div>
+                </div>
+                <div class="text-sm text-white/70 mb-1">景点: 摩崖石刻</div>
+                <div class="text-sm text-white/70">样片: 3/4</div>
+            </div>
+
+            <!-- 样片列表 -->
+            <div class="mb-4">
+                <div class="flex justify-between items-center mb-2">
+                    <div class="font-medium">样片列表</div>
+                    <div class="text-xs text-white/70">点击预览</div>
+                </div>
+                <div class="grid grid-cols-4 gap-2">
+                    <div class="sample-item">
+                        <div class="relative">
+                            <img src="https://picsum.photos/id/1018/100/100" alt="样片1" class="w-full h-16 object-cover rounded">
+                            <div class="absolute inset-0 bg-success/20 border border-success rounded flex items-center justify-center">
+                                <i class="fa fa-check text-success"></i>
+                            </div>
+                        </div>
+                        <div class="text-center text-xs text-white/70 mt-1">已完成</div>
+                    </div>
+                    <div class="sample-item">
+                        <div class="relative">
+                            <img src="https://picsum.photos/id/1019/100/100" alt="样片2" class="w-full h-16 object-cover rounded">
+                            <div class="absolute inset-0 bg-success/20 border border-success rounded flex items-center justify-center">
+                                <i class="fa fa-check text-success"></i>
+                            </div>
+                        </div>
+                        <div class="text-center text-xs text-white/70 mt-1">已完成</div>
+                    </div>
+                    <div class="sample-item">
+                        <div class="relative">
+                            <img src="https://picsum.photos/id/1020/100/100" alt="样片3" class="w-full h-16 object-cover rounded border-2 border-primary">
+                        </div>
+                        <div class="text-center text-xs text-primary mt-1">拍摄中</div>
+                    </div>
+                    <div class="sample-item">
+                        <div class="relative">
+                            <img src="https://picsum.photos/id/1021/100/100" alt="样片4" class="w-full h-16 object-cover rounded opacity-50">
+                        </div>
+                        <div class="text-center text-xs text-white/70 mt-1">待拍摄</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 控制按钮 -->
+            <div class="grid grid-cols-3 gap-3 mb-4">
+                <button class="bg-white/10 hover:bg-white/20 text-white py-3 rounded-lg flex flex-col items-center justify-center">
+                    <i class="fa fa-refresh text-lg"></i>
+                    <span class="text-xs mt-1">重拍</span>
+                </button>
+                <button class="bg-primary text-white py-3 rounded-lg flex flex-col items-center justify-center">
+                    <i class="fa fa-play text-lg"></i>
+                    <span class="text-xs mt-1">播放预览</span>
+                </button>
+                <button class="bg-success text-white py-3 rounded-lg flex flex-col items-center justify-center">
+                    <i class="fa fa-check text-lg"></i>
+                    <span class="text-xs mt-1">确认通过</span>
+                </button>
+            </div>
+
+            <!-- 飞行控制 -->
+            <div class="tech-border border-accent/30 p-3 rounded-lg mb-4">
+                <div class="font-medium mb-2">飞行控制</div>
+                <div class="grid grid-cols-2 gap-3">
+                    <button class="bg-white/10 hover:bg-white/20 text-white py-2 rounded-lg flex items-center justify-center">
+                        <i class="fa fa-home mr-2"></i> 返回
+                    </button>
+                    <button class="bg-white/10 hover:bg-white/20 text-white py-2 rounded-lg flex items-center justify-center">
+                        <i class="fa fa-pause mr-2"></i> 悬停
+                    </button>
+                </div>
+            </div>
+
+            <!-- 紧急控制 -->
+            <div class="flex gap-3">
+                <button class="flex-1 bg-white/10 hover:bg-white/20 text-white py-3 rounded-lg flex items-center justify-center">
+                    <i class="fa fa-pause-circle mr-2"></i> 暂停拍摄
+                </button>
+                <button class="flex-1 bg-danger text-white py-3 rounded-lg flex items-center justify-center">
+                    <i class="fa fa-exclamation-triangle mr-2"></i> 紧急停止
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 样片预览模态框 -->
+    <div id="samplePreviewModal" class="fixed inset-0 bg-black/90 z-50 hidden flex items-center justify-center">
+        <div class="w-full max-w-md p-4">
+            <div class="relative">
+                <video id="previewVideo" class="w-full rounded-lg" controls>
+                    <source src="sample-video.mp4" type="video/mp4">
+                    您的浏览器不支持视频播放
+                </video>
+                <button id="closeSamplePreviewBtn" class="absolute top-2 right-2 bg-black/50 text-white w-8 h-8 rounded-full flex items-center justify-center">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="mt-4 flex justify-between">
+                <button class="bg-white/10 hover:bg-white/20 text-white py-2 px-4 rounded-lg">
+                    <i class="fa fa-refresh mr-2"></i> 重拍
+                </button>
+                <button class="bg-success text-white py-2 px-4 rounded-lg">
+                    <i class="fa fa-check mr-2"></i> 确认通过
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 确认完成模态框 -->
+    <div id="completeModal" class="fixed inset-0 bg-black/90 z-50 hidden flex items-center justify-center">
+        <div class="bg-white w-full max-w-md rounded-lg m-4">
+            <div class="p-4 border-b">
+                <h3 class="font-semibold text-lg text-center">拍摄完成</h3>
+            </div>
+            <div class="p-4">
+                <div class="text-center mb-4">
+                    <div class="w-16 h-16 bg-success/20 rounded-full flex items-center justify-center mx-auto">
+                        <i class="fa fa-check-circle text-success text-3xl"></i>
+                    </div>
+                    <p class="mt-3 text-gray-medium">所有景点样片已拍摄完成</p>
+                </div>
+                
+                <div class="tech-border p-3 rounded-lg mb-4">
+                    <div class="flex justify-between">
+                        <span class="text-sm font-medium">订单号</span>
+                        <span class="text-sm">DX20230615001</span>
+                    </div>
+                    <div class="flex justify-between mt-2">
+                        <span class="text-sm font-medium">客户</span>
+                        <span class="text-sm">张先生 (138****1234)</span>
+                    </div>
+                    <div class="flex justify-between mt-2">
+                        <span class="text-sm font-medium">拍摄景点</span>
+                        <span class="text-sm">5个</span>
+                    </div>
+                    <div class="flex justify-between mt-2">
+                        <span class="text-sm font-medium">拍摄样片</span>
+                        <span class="text-sm">12个</span>
+                    </div>
+                </div>
+                
+                <p class="text-sm text-gray-medium mb-4">系统将自动进行AI剪辑，完成后会通知客户</p>
+            </div>
+            <div class="p-4 border-t flex gap-3">
+                <button id="backToOrdersBtn" class="flex-1 bg-white border border-gray-light text-dark py-3 rounded-lg">
+                    返回订单列表
+                </button>
+                <button id="viewResultBtn" class="flex-1 bg-primary text-white py-3 rounded-lg">
+                    查看拍摄结果
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 返回按钮
+            const backBtn = document.getElementById('backBtn');
+            
+            backBtn.addEventListener('click', function() {
+                showConfirm('确认返回', '确定要退出拍摄页面吗？当前进度将会保存。', function() {
+                    window.location.href = 'order.html';
+                });
+            });
+            
+            // 样片预览
+            const sampleItems = document.querySelectorAll('.sample-item');
+            const samplePreviewModal = document.getElementById('samplePreviewModal');
+            const closeSamplePreviewBtn = document.getElementById('closeSamplePreviewBtn');
+            const previewVideo = document.getElementById('previewVideo');
+            
+            sampleItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    samplePreviewModal.classList.remove('hidden');
+                    // 如果是实际视频，这里应该设置视频源
+                    // previewVideo.src = '样片视频URL';
+                    previewVideo.play();
+                });
+            });
+            
+            closeSamplePreviewBtn.addEventListener('click', function() {
+                samplePreviewModal.classList.add('hidden');
+                previewVideo.pause();
+            });
+            
+            // 确认完成模态框
+            const completeModal = document.getElementById('completeModal');
+            const backToOrdersBtn = document.getElementById('backToOrdersBtn');
+            const viewResultBtn = document.getElementById('viewResultBtn');
+            
+            // 模拟拍摄完成后显示确认完成模态框
+            // 实际应用中应该在最后一个样片确认通过后触发
+            setTimeout(() => {
+                completeModal.classList.remove('hidden');
+            }, 30000); // 30秒后显示，仅用于演示
+            
+            backToOrdersBtn.addEventListener('click', function() {
+                window.location.href = 'order.html';
+            });
+            
+            viewResultBtn.addEventListener('click', function() {
+                // 跳转到查看结果页面
+                showToast('正在处理中，请稍后查看');
+                setTimeout(() => {
+                    window.location.href = 'order.html';
+                }, 1500);
+            });
+            
+            // 模拟电量更新
+            setInterval(() => {
+                updateBatteryStatus();
+            }, 60000); // 每分钟更新一次
+            
+            // 模拟飞行时间更新
+            let seconds = 323; // 初始5分23秒
+            setInterval(() => {
+                seconds++;
+                updateFlightTime(seconds);
+            }, 1000);
+        });
+        
+        // 更新电量状态
+        function updateBatteryStatus() {
+            // 模拟电量减少
+            const batteryEl = document.querySelector('.fa-battery-three-quarters');
+            const batteryText = batteryEl.nextSibling;
+            
+            // 获取当前电量
+            let currentBattery = parseInt(batteryText.textContent.trim().replace('%', ''));
+            currentBattery -= 1; // 每分钟减少1%
+            
+            // 更新电量显示
+            batteryText.textContent = ` ${currentBattery}%`;
+            
+            // 更新电量图标
+            if (currentBattery <= 20) {
+                batteryEl.className = 'fa fa-battery-empty text-danger';
+                // 显示低电量警告
+                showToast('无人机电量低，请及时更换电池', 'warning');
+                playVoiceAlert('无人机电量低，请及时更换电池');
+            } else if (currentBattery <= 50) {
+                batteryEl.className = 'fa fa-battery-half text-warning';
+            }
+        }
+        
+        // 更新飞行时间
+        function updateFlightTime(totalSeconds) {
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+            
+            // 格式化时间
+            const formattedTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            // 更新显示
+            const flightTimeEl = document.querySelector('.fa-clock-o').parentNode;
+            flightTimeEl.innerHTML = `<i class="fa fa-clock-o"></i> 飞行时间: ${formattedTime}`;
+        }
+    </script>
+</body>
+</html> 

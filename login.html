@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>合伙人登录 - 无人机自助打卡</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#1E40AF',
+                        accent: '#06B6D4',
+                        dark: '#1E293B',
+                        light: '#F8FAFC',
+                        'gray-medium': '#64748B',
+                        'gray-light': '#E2E8F0',
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-light">
+    <!-- 页面容器 -->
+    <div class="min-h-screen flex flex-col">
+        <!-- 顶部标题区域 -->
+        <div class="bg-gradient-to-r from-primary to-accent p-6 text-white">
+            <div class="container mx-auto">
+                <h1 class="text-2xl font-bold">
+                    <i class="fa fa-paper-plane mr-2"></i>无人机自助打卡
+                </h1>
+                <p class="text-sm opacity-90 mt-1">项目合伙人管理平台</p>
+            </div>
+        </div>
+
+        <!-- 登录表单区域 -->
+        <div class="flex-1 flex items-center justify-center p-6">
+            <div class="w-full max-w-md">
+                <div class="card-tech bg-white p-6 rounded-lg shadow-md">
+                    <div class="text-center mb-6">
+                        <div class="w-20 h-20 rounded-full bg-gradient-to-br from-primary/20 to-accent/10 flex items-center justify-center mx-auto mb-4">
+                            <i class="fa fa-user text-primary text-3xl"></i>
+                        </div>
+                        <h2 class="text-xl font-bold text-dark">合伙人登录</h2>
+                        <p class="text-gray-medium text-sm mt-1">请使用您的账号登录系统</p>
+                    </div>
+
+                    <!-- 登录表单 -->
+                    <div class="space-y-4">
+                        <!-- 登录方式切换 -->
+                        <div class="flex rounded-lg overflow-hidden border border-gray-light mb-4">
+                            <button id="phoneLoginBtn" class="flex-1 py-3 text-center bg-primary text-white font-medium">
+                                <i class="fa fa-mobile-phone mr-1"></i> 手机号登录
+                            </button>
+                            <button id="passwordLoginBtn" class="flex-1 py-3 text-center bg-white text-gray-medium font-medium">
+                                <i class="fa fa-lock mr-1"></i> 密码登录
+                            </button>
+                        </div>
+
+                        <!-- 手机号登录表单 -->
+                        <div id="phoneLoginForm">
+                            <div class="form-group">
+                                <label class="form-label">手机号</label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-medium">
+                                        <i class="fa fa-mobile-phone text-xl"></i>
+                                    </span>
+                                    <input type="tel" id="phone" class="form-control pl-10" placeholder="请输入手机号码">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">验证码</label>
+                                <div class="flex gap-2">
+                                    <div class="relative flex-1">
+                                        <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-medium">
+                                            <i class="fa fa-key"></i>
+                                        </span>
+                                        <input type="text" id="smsCode" class="form-control pl-10" placeholder="请输入验证码">
+                                    </div>
+                                    <button id="getSmsBtn" class="btn btn-secondary no-scale" style="min-width: 100px;">获取验证码</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 密码登录表单 -->
+                        <div id="passwordLoginForm" class="hidden">
+                            <div class="form-group">
+                                <label class="form-label">手机号</label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-medium">
+                                        <i class="fa fa-mobile-phone text-xl"></i>
+                                    </span>
+                                    <input type="tel" id="phonePassword" class="form-control pl-10" placeholder="请输入手机号码">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">密码</label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-medium">
+                                        <i class="fa fa-lock"></i>
+                                    </span>
+                                    <input type="password" id="password" class="form-control pl-10" placeholder="请输入密码">
+                                    <button type="button" id="togglePassword" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-medium">
+                                        <i class="fa fa-eye-slash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 忘记密码 -->
+                        <div class="text-right">
+                            <a href="#" id="forgotPassword" class="text-primary text-sm">忘记密码？</a>
+                        </div>
+
+                        <!-- 登录按钮 -->
+                        <button id="loginBtn" class="btn btn-tech w-full touch-friendly">
+                            <i class="fa fa-sign-in mr-2"></i>登录
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 客服帮助 -->
+                <div class="mt-6 text-center">
+                    <p class="text-gray-medium text-sm">遇到问题？请联系客服</p>
+                    <button onclick="makePhoneCall('400-888-6666')" class="mt-2 inline-flex items-center justify-center px-4 py-2 border border-gray-light rounded-full text-sm text-gray-medium touch-friendly">
+                        <i class="fa fa-phone mr-2"></i>客服热线
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 登录方式切换
+            const phoneLoginBtn = document.getElementById('phoneLoginBtn');
+            const passwordLoginBtn = document.getElementById('passwordLoginBtn');
+            const phoneLoginForm = document.getElementById('phoneLoginForm');
+            const passwordLoginForm = document.getElementById('passwordLoginForm');
+            
+            phoneLoginBtn.addEventListener('click', function() {
+                phoneLoginBtn.classList.remove('bg-white', 'text-gray-medium');
+                phoneLoginBtn.classList.add('bg-primary', 'text-white');
+                passwordLoginBtn.classList.remove('bg-primary', 'text-white');
+                passwordLoginBtn.classList.add('bg-white', 'text-gray-medium');
+                phoneLoginForm.classList.remove('hidden');
+                passwordLoginForm.classList.add('hidden');
+            });
+            
+            passwordLoginBtn.addEventListener('click', function() {
+                passwordLoginBtn.classList.remove('bg-white', 'text-gray-medium');
+                passwordLoginBtn.classList.add('bg-primary', 'text-white');
+                phoneLoginBtn.classList.remove('bg-primary', 'text-white');
+                phoneLoginBtn.classList.add('bg-white', 'text-gray-medium');
+                passwordLoginForm.classList.remove('hidden');
+                phoneLoginForm.classList.add('hidden');
+            });
+            
+            // 密码显示切换
+            const togglePassword = document.getElementById('togglePassword');
+            const passwordInput = document.getElementById('password');
+            
+            togglePassword.addEventListener('click', function() {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                
+                const icon = togglePassword.querySelector('i');
+                if (type === 'password') {
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            });
+            
+            // 获取验证码
+            const getSmsBtn = document.getElementById('getSmsBtn');
+            let countdown = 60;
+            let timer = null;
+            
+            getSmsBtn.addEventListener('click', function() {
+                const phone = document.getElementById('phone').value;
+                if (!phone || phone.length !== 11) {
+                    showToast('请输入正确的手机号码', 'error');
+                    return;
+                }
+                
+                // 开始倒计时
+                getSmsBtn.disabled = true;
+                getSmsBtn.classList.add('opacity-50');
+                getSmsBtn.textContent = `${countdown}秒后重新获取`;
+                
+                timer = setInterval(() => {
+                    countdown--;
+                    getSmsBtn.textContent = `${countdown}秒后重新获取`;
+                    
+                    if (countdown <= 0) {
+                        clearInterval(timer);
+                        getSmsBtn.disabled = false;
+                        getSmsBtn.classList.remove('opacity-50');
+                        getSmsBtn.textContent = '获取验证码';
+                        countdown = 60;
+                    }
+                }, 1000);
+                
+                showToast('验证码已发送');
+            });
+            
+            // 登录按钮
+            const loginBtn = document.getElementById('loginBtn');
+            
+            loginBtn.addEventListener('click', function() {
+                // 判断当前登录方式
+                if (phoneLoginForm.classList.contains('hidden')) {
+                    // 密码登录
+                    const phone = document.getElementById('phonePassword').value;
+                    const password = document.getElementById('password').value;
+                    
+                    if (!phone || phone.length !== 11) {
+                        showToast('请输入正确的手机号码', 'error');
+                        return;
+                    }
+                    
+                    if (!password) {
+                        showToast('请输入密码', 'error');
+                        return;
+                    }
+                    
+                    login(phone, password, 'password');
+                } else {
+                    // 验证码登录
+                    const phone = document.getElementById('phone').value;
+                    const smsCode = document.getElementById('smsCode').value;
+                    
+                    if (!phone || phone.length !== 11) {
+                        showToast('请输入正确的手机号码', 'error');
+                        return;
+                    }
+                    
+                    if (!smsCode) {
+                        showToast('请输入验证码', 'error');
+                        return;
+                    }
+                    
+                    login(phone, smsCode, 'sms');
+                }
+            });
+            
+            // 忘记密码
+            const forgotPassword = document.getElementById('forgotPassword');
+            
+            forgotPassword.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // 简单的密码重置流程
+                const phone = prompt('请输入您的手机号码，我们将发送重置密码的验证码');
+                if (phone) {
+                    showToast('密码重置链接已发送到您的手机');
+                }
+            });
+        });
+    </script>
+</body>
+</html> 
