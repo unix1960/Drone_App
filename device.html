@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>设备管理 - 合伙人管理系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#1E40AF',
+                        accent: '#06B6D4',
+                        dark: '#1E293B',
+                        light: '#F8FAFC',
+                        'gray-medium': '#64748B',
+                        'gray-light': '#E2E8F0',
+                        'blue-primary': '#3B82F6',
+                        'blue-secondary': '#1D4ED8',
+                        'status-online': '#10B981',
+                        'status-low': '#F59E0B',
+                        'status-offline': '#6B7280',
+                        'status-danger': '#EF4444',
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            }
+            .touch-friendly {
+                touch-action: manipulation;
+                -webkit-tap-highlight-color: transparent;
+            }
+            .safe-area-bottom {
+                padding-bottom: constant(safe-area-inset-bottom);
+                padding-bottom: env(safe-area-inset-bottom);
+            }
+            .miniprogram-card {
+                box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+                border-radius: 8px;
+            }
+            .status-indicator {
+                position: relative;
+            }
+            .status-indicator::before {
+                content: '';
+                position: absolute;
+                top: -2px;
+                right: -2px;
+                width: 12px;
+                height: 12px;
+                border-radius: 50%;
+                background: #10B981;
+                border: 2px solid white;
+                animation: blink 1.5s infinite;
+            }
+            .status-indicator.offline::before {
+                background: #6B7280;
+                animation: none;
+            }
+            .status-indicator.low::before {
+                background: #F59E0B;
+                animation: blink 1s infinite;
+            }
+            @keyframes blink {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.3; }
+            }
+            .battery-icon {
+                position: relative;
+                width: 40px;
+                height: 20px;
+                border: 2px solid currentColor;
+                border-radius: 3px;
+                display: inline-block;
+            }
+            .battery-icon::after {
+                content: '';
+                position: absolute;
+                top: 4px;
+                right: -5px;
+                width: 3px;
+                height: 8px;
+                background-color: currentColor;
+                border-radius: 0 1px 1px 0;
+            }
+            .battery-level {
+                position: absolute;
+                top: 2px;
+                left: 2px;
+                bottom: 2px;
+                background-color: currentColor;
+                border-radius: 1px;
+                transition: width 0.3s ease;
+            }
+        }
+    </style>
+</head>
+<body class="font-inter bg-light text-dark antialiased touch-action-manipulation">
+    <!-- 页面容器 -->
+    <div class="min-h-screen w-full pb-24 safe-area-bottom">
+        <!-- 头部导航 -->
+        <header class="bg-white border-b border-gray-light sticky top-0 z-40">
+            <div class="flex items-center justify-between h-14 px-4">
+                <button onclick="navigateToPage('login.html')" class="flex items-center text-gray-medium touch-friendly">
+                    <i class="fa fa-sign-out mr-1"></i>
+                    <span class="text-sm">退出</span>
+                </button>
+                <h1 class="font-bold text-dark">设备管理</h1>
+                <button id="refreshBtn" class="text-gray-medium touch-friendly">
+                    <i class="fa fa-refresh text-xl"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- 设备状态概览 -->
+        <section class="p-4">
+            <div class="miniprogram-card bg-white p-4">
+                <h2 class="font-bold text-dark mb-4">设备状态概览</h2>
+                <div class="grid grid-cols-3 gap-4">
+                    <!-- 在线设备 -->
+                    <div class="bg-blue-50 rounded-lg p-3 text-center">
+                        <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-2">
+                            <i class="fa fa-cube text-primary text-xl"></i>
+                        </div>
+                        <h3 class="font-bold text-lg">3</h3>
+                        <p class="text-sm text-gray-medium">在线设备</p>
+                    </div>
+                    <!-- 低电量 -->
+                    <div class="bg-yellow-50 rounded-lg p-3 text-center">
+                        <div class="w-12 h-12 rounded-full bg-warning/10 flex items-center justify-center mx-auto mb-2">
+                            <i class="fa fa-battery-three-quarters text-warning text-xl"></i>
+                        </div>
+                        <h3 class="font-bold text-lg">1</h3>
+                        <p class="text-sm text-gray-medium">低电量设备</p>
+                    </div>
+                    <!-- 离线设备 -->
+                    <div class="bg-gray-50 rounded-lg p-3 text-center">
+                        <div class="w-12 h-12 rounded-full bg-gray-light/50 flex items-center justify-center mx-auto mb-2">
+                            <i class="fa fa-power-off text-gray-medium text-xl"></i>
+                        </div>
+                        <h3 class="font-bold text-lg">0</h3>
+                        <p class="text-sm text-gray-medium">离线设备</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 设备列表 -->
+        <section class="p-4">
+            <h2 class="font-bold text-dark mb-3">我的设备</h2>
+            <div class="space-y-4" id="devicesList">
+                <!-- 设备1：在线 -->
+                <div class="miniprogram-card bg-white p-4 touch-friendly">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex items-center">
+                            <div class="status-indicator w-10 h-10 rounded-full bg-status-online/10 flex items-center justify-center mr-3">
+                                <i class="fa fa-cube text-status-online"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-medium text-dark">大疆御3 Pro</h3>
+                                <p class="text-sm text-gray-medium">设备编号：DJI20230501</p>
+                            </div>
+                        </div>
+                        <span class="bg-status-online/20 text-status-online text-xs px-2 py-1 rounded-full">在线</span>
+                    </div>
+                    <div class="space-y-3">
+                        <!-- 电池信息 -->
+                        <div class="bg-blue-50 p-3 rounded-lg">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm font-medium">电池电量</span>
+                                <div class="flex items-center">
+                                    <div class="battery-icon text-status-online mr-2">
+                                        <div class="battery-level text-status-online" style="width: 85%"></div>
+                                    </div>
+                                    <span class="text-sm font-medium">85%</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between text-xs text-gray-medium">
+                                <span>剩余时间：45分钟</span>
+                                <span>温度：30°C</span>
+                            </div>
+                        </div>
+                        <!-- 设备信息 -->
+                        <div class="grid grid-cols-3 gap-2 text-center text-sm">
+                            <div class="bg-gray-50 p-2 rounded-lg">
+                                <p class="text-gray-medium">飞行次数</p>
+                                <p class="font-medium mt-1">128次</p>
+                            </div>
+                            <div class="bg-gray-50 p-2 rounded-lg">
+                                <p class="text-gray-medium">总飞行时间</p>
+                                <p class="font-medium mt-1">62.5小时</p>
+                            </div>
+                            <div class="bg-gray-50 p-2 rounded-lg">
+                                <p class="text-gray-medium">最近维护</p>
+                                <p class="font-medium mt-1">3天前</p>
+                            </div>
+                        </div>
+                        <!-- 操作按钮 -->
+                        <div class="flex space-x-3">
+                            <button class="flex-1 bg-gray-light text-gray-medium py-2 rounded-lg text-sm font-medium touch-friendly">
+                                <i class="fa fa-info-circle mr-1"></i>设备详情
+                            </button>
+                            <button class="flex-1 bg-primary text-white py-2 rounded-lg text-sm font-medium touch-friendly">
+                                <i class="fa fa-exchange mr-1"></i>切换设备
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 设备2：低电量 -->
+                <div class="miniprogram-card bg-white p-4 touch-friendly">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex items-center">
+                            <div class="status-indicator low w-10 h-10 rounded-full bg-warning/10 flex items-center justify-center mr-3">
+                                <i class="fa fa-cube text-warning"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-medium text-dark">大疆御3 Pro</h3>
+                                <p class="text-sm text-gray-medium">设备编号：DJI20230502</p>
+                            </div>
+                        </div>
+                        <span class="bg-warning/20 text-warning text-xs px-2 py-1 rounded-full">低电量</span>
+                    </div>
+                    <div class="space-y-3">
+                        <!-- 电池信息 -->
+                        <div class="bg-yellow-50 p-3 rounded-lg">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm font-medium">电池电量</span>
+                                <div class="flex items-center">
+                                    <div class="battery-icon text-warning mr-2">
+                                        <div class="battery-level text-warning" style="width: 18%"></div>
+                                    </div>
+                                    <span class="text-sm font-medium">18%</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between text-xs text-gray-medium">
+                                <span>剩余时间：8分钟</span>
+                                <span>温度：28°C</span>
+                            </div>
+                        </div>
+                        <!-- 设备信息 -->
+                        <div class="grid grid-cols-3 gap-2 text-center text-sm">
+                            <div class="bg-gray-50 p-2 rounded-lg">
+                                <p class="text-gray-medium">飞行次数</p>
+                                <p class="font-medium mt-1">95次</p>
+                            </div>
+                            <div class="bg-gray-50 p-2 rounded-lg">
+                                <p class="text-gray-medium">总飞行时间</p>
+                                <p class="font-medium mt-1">46.2小时</p>
+                            </div>
+                            <div class="bg-gray-50 p-2 rounded-lg">
+                                <p class="text-gray-medium">最近维护</p>
+                                <p class="font-medium mt-1">1周前</p>
+                            </div>
+                        </div>
+                        <!-- 操作按钮 -->
+                        <div class="flex space-x-3">
+                            <button class="flex-1 bg-warning text-white py-2 rounded-lg text-sm font-medium touch-friendly">
+                                <i class="fa fa-battery-half mr-1"></i>更换电池
+                            </button>
+                            <button class="flex-1 bg-primary text-white py-2 rounded-lg text-sm font-medium touch-friendly">
+                                <i class="fa fa-exchange mr-1"></i>切换设备
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 设备3：在线 -->
+                <div class="miniprogram-card bg-white p-4 touch-friendly">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex items-center">
+                            <div class="status-indicator w-10 h-10 rounded-full bg-status-online/10 flex items-center justify-center mr-3">
+                                <i class="fa fa-cube text-status-online"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-medium text-dark">大疆御3 Pro</h3>
+                                <p class="text-sm text-gray-medium">设备编号：DJI20230503</p>
+                            </div>
+                        </div>
+                        <span class="bg-status-online/20 text-status-online text-xs px-2 py-1 rounded-full">在线</span>
+                    </div>
+                    <div class="space-y-3">
+                        <!-- 电池信息 -->
+                        <div class="bg-blue-50 p-3 rounded-lg">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm font-medium">电池电量</span>
+                                <div class="flex items-center">
+                                    <div class="battery-icon text-status-online mr-2">
+                                        <div class="battery-level text-status-online" style="width: 65%"></div>
+                                    </div>
+                                    <span class="text-sm font-medium">65%</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between text-xs text-gray-medium">
+                                <span>剩余时间：32分钟</span>
+                                <span>温度：31°C</span>
+                            </div>
+                        </div>
+                        <!-- 设备信息 -->
+                        <div class="grid grid-cols-3 gap-2 text-center text-sm">
+                            <div class="bg-gray-50 p-2 rounded-lg">
+                                <p class="text-gray-medium">飞行次数</p>
+                                <p class="font-medium mt-1">72次</p>
+                            </div>
+                            <div class="bg-gray-50 p-2 rounded-lg">
+                                <p class="text-gray-medium">总飞行时间</p>
+                                <p class="font-medium mt-1">35.8小时</p>
+                            </div>
+                            <div class="bg-gray-50 p-2 rounded-lg">
+                                <p class="text-gray-medium">最近维护</p>
+                                <p class="font-medium mt-1">2天前</p>
+                            </div>
+                        </div>
+                        <!-- 操作按钮 -->
+                        <div class="flex space-x-3">
+                            <button class="flex-1 bg-gray-light text-gray-medium py-2 rounded-lg text-sm font-medium touch-friendly">
+                                <i class="fa fa-info-circle mr-1"></i>设备详情
+                            </button>
+                            <button class="flex-1 bg-primary text-white py-2 rounded-lg text-sm font-medium touch-friendly">
+                                <i class="fa fa-exchange mr-1"></i>切换设备
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 设备维护提醒 -->
+        <section class="p-4">
+            <div class="miniprogram-card bg-gradient-to-r from-secondary to-secondary/80 p-4 text-white">
+                <div class="flex items-center mb-3">
+                    <i class="fa fa-wrench text-xl mr-2"></i>
+                    <h2 class="font-bold">设备维护提醒</h2>
+                </div>
+                <p class="text-white/90 text-sm mb-4">定期维护可以延长设备使用寿命，提高拍摄质量</p>
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <span>下次维护时间</span>
+                        <span class="font-medium">3天后</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>已飞行次数</span>
+                        <span class="font-medium">295次 / 300次</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>已飞行时间</span>
+                        <span class="font-medium">144.5小时 / 150小时</span>
+                    </div>
+                </div>
+                <button id="repairBtn" class="w-full mt-4 bg-white/20 backdrop-blur-sm text-white py-3 rounded-lg text-sm font-medium touch-friendly">
+                    <i class="fa fa-phone mr-1"></i>一键报修
+                </button>
+            </div>
+        </section>
+
+        <!-- 一键报修弹窗 -->
+        <div id="repairModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 hidden">
+            <div class="bg-white rounded-lg w-full max-w-md mx-4 overflow-hidden">
+                <div class="p-5 border-b border-gray-light">
+                    <h3 class="font-bold text-lg text-dark">设备报修</h3>
+                </div>
+                <div class="p-5">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-dark mb-2">选择设备</label>
+                        <select class="w-full p-3 border border-gray-light rounded-lg focus:outline-none">
+                            <option value="DJI20230501">大疆御3 Pro (DJI20230501)</option>
+                            <option value="DJI20230502">大疆御3 Pro (DJI20230502)</option>
+                            <option value="DJI20230503">大疆御3 Pro (DJI20230503)</option>
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-dark mb-2">问题类型</label>
+                        <select class="w-full p-3 border border-gray-light rounded-lg focus:outline-none">
+                            <option value="battery">电池问题</option>
+                            <option value="camera">相机问题</option>
+                            <option value="motor">电机问题</option>
+                            <option value="signal">信号问题</option>
+                            <option value="other">其他问题</option>
+                        </select>
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-dark mb-2">问题描述</label>
+                        <textarea class="w-full p-3 border border-gray-light rounded-lg focus:outline-none min-h-[100px]" placeholder="请详细描述设备问题..."></textarea>
+                    </div>
+                    <div class="flex space-x-3">
+                        <button id="cancelRepairBtn" class="flex-1 bg-gray-light text-gray-medium py-3 rounded-lg font-medium touch-friendly">
+                            取消
+                        </button>
+                        <button id="confirmRepairBtn" class="flex-1 bg-primary text-white py-3 rounded-lg font-medium touch-friendly">
+                            提交报修
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部导航栏 -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-light z-50 safe-area-bottom">
+        <div class="flex justify-around items-center h-16">
+            <div class="tab-item flex flex-col items-center justify-center text-gray-medium touch-friendly" data-page="order" onclick="location.href='order.html'">
+                <i class="fa fa-list-alt text-lg mb-1"></i>
+                <span class="text-xs">订单</span>
+            </div>
+            <div class="tab-item flex flex-col items-center justify-center text-primary touch-friendly active" data-page="device">
+                <i class="fa fa-cube text-lg mb-1"></i>
+                <span class="text-xs">设备</span>
+            </div>
+            <div class="tab-item flex flex-col items-center justify-center text-gray-medium touch-friendly" data-page="report" onclick="location.href='report.html'">
+                <i class="fa fa-bar-chart text-lg mb-1"></i>
+                <span class="text-xs">报表</span>
+            </div>
+            <div class="tab-item flex flex-col items-center justify-center text-gray-medium touch-friendly" data-page="profile" onclick="location.href='profile.html'">
+                <i class="fa fa-user text-lg mb-1"></i>
+                <span class="text-xs">我的</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- JavaScript交互代码 -->
+    <script src="app.js"></script>
+    <script>
+        // 刷新按钮点击事件
+        const refreshBtn = document.getElementById('refreshBtn');
+
+        refreshBtn.addEventListener('click', () => {
+            // 添加刷新动画
+            refreshBtn.style.transform = 'rotate(180deg)';
+            refreshBtn.style.transition = 'transform 0.5s ease';
+            
+            // 模拟刷新数据
+            showToast('正在刷新设备状态...');
+            
+            setTimeout(() => {
+                refreshBtn.style.transform = 'rotate(0deg)';
+                showToast('设备状态已更新');
+                // 实际应用中应调用API获取最新设备状态
+            }, 1500);
+        });
+
+        // 一键报修按钮点击事件
+        const repairBtn = document.getElementById('repairBtn');
+        const repairModal = document.getElementById('repairModal');
+        const cancelRepairBtn = document.getElementById('cancelRepairBtn');
+        const confirmRepairBtn = document.getElementById('confirmRepairBtn');
+
+        repairBtn.addEventListener('click', () => {
+            repairModal.classList.remove('hidden');
+        });
+
+        cancelRepairBtn.addEventListener('click', () => {
+            repairModal.classList.add('hidden');
+        });
+
+        confirmRepairBtn.addEventListener('click', () => {
+            // 模拟提交报修请求
+            confirmRepairBtn.disabled = true;
+            confirmRepairBtn.textContent = '提交中...';
+            
+            setTimeout(() => {
+                showToast('报修请求已提交');
+                repairModal.classList.add('hidden');
+                confirmRepairBtn.disabled = false;
+                confirmRepairBtn.textContent = '提交报修';
+            }, 1500);
+        });
+
+        // 点击弹窗外部关闭
+        repairModal.addEventListener('click', (e) => {
+            if (e.target === repairModal) {
+                repairModal.classList.add('hidden');
+            }
+        });
+
+        // 更换电池按钮点击事件
+        const batteryButtons = document.querySelectorAll('.flex-1.bg-warning.text-white');
+        batteryButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                showToast('请按照操作指南更换电池');
+            });
+        });
+
+        // 切换设备按钮点击事件
+        const switchButtons = document.querySelectorAll('.flex-1.bg-primary.text-white');
+        switchButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // 移除所有设备的活跃状态
+                const devices = document.querySelectorAll('.miniprogram-card.bg-white.p-4');
+                devices.forEach(device => {
+                    device.classList.remove('border-2', 'border-primary');
+                });
+                
+                // 添加当前设备的活跃状态
+                const currentDevice = button.closest('.miniprogram-card');
+                currentDevice.classList.add('border-2', 'border-primary');
+                
+                showToast('已切换至该设备');
+            });
+        });
+
+        // 设备详情按钮点击事件
+        const detailButtons = document.querySelectorAll('.flex-1.bg-gray-light.text-gray-medium');
+        detailButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const deviceName = button.closest('.miniprogram-card').querySelector('h3').textContent;
+                const deviceId = button.closest('.miniprogram-card').querySelector('p').textContent.replace('设备编号：', '');
+                
+                showToast(`查看${deviceName} (${deviceId}) 详情`);
+                // 实际应用中应跳转到设备详情页面
+            });
+        });
+    </script>
+</body>
+</html>

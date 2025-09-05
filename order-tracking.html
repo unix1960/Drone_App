@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>订单跟踪 - 合伙人管理系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#1E40AF',
+                        accent: '#06B6D4',
+                        dark: '#1E293B',
+                        light: '#F8FAFC',
+                        'gray-medium': '#64748B',
+                        'gray-light': '#E2E8F0',
+                        'blue-primary': '#3B82F6',
+                        'blue-secondary': '#1D4ED8',
+                        'status-success': '#10B981',
+                        'status-warning': '#F59E0B',
+                        'status-danger': '#EF4444',
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            }
+            .touch-friendly {
+                touch-action: manipulation;
+                -webkit-tap-highlight-color: transparent;
+            }
+            .safe-area-bottom {
+                padding-bottom: constant(safe-area-inset-bottom);
+                padding-bottom: env(safe-area-inset-bottom);
+            }
+            .miniprogram-card {
+                box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+                border-radius: 8px;
+            }
+            .drone-status-indicator {
+                position: relative;
+            }
+            .drone-status-indicator::before {
+                content: '';
+                position: absolute;
+                top: -2px;
+                right: -2px;
+                width: 12px;
+                height: 12px;
+                border-radius: 50%;
+                background: #10B981;
+                border: 2px solid white;
+                animation: blink 1.5s infinite;
+            }
+            @keyframes blink {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.3; }
+            }
+            .emergency-button {
+                background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+                box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3);
+                transform: scale(1);
+                transition: all 0.3s ease;
+            }
+            .emergency-button:active {
+                transform: scale(0.95);
+                box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4);
+            }
+            .progress-ring-circle {
+                transition: stroke-dashoffset 0.35s;
+                transform: rotate(-90deg);
+                transform-origin: 50% 50%;
+            }
+        }
+    </style>
+</head>
+<body class="font-inter bg-light text-dark antialiased touch-action-manipulation">
+    <!-- 页面容器 -->
+    <div class="min-h-screen w-full pb-24 safe-area-bottom">
+        <!-- 头部导航 -->
+        <header class="bg-white border-b border-gray-light sticky top-0 z-40">
+            <div class="flex items-center justify-between h-14 px-4">
+                <button onclick="history.back()" class="flex items-center text-gray-medium touch-friendly">
+                    <i class="fa fa-angle-left text-xl mr-1"></i>
+                    <span class="text-sm">返回</span>
+                </button>
+                <h1 class="font-bold text-dark">订单跟踪</h1>
+                <button onclick="showHelp()" class="text-gray-medium touch-friendly">
+                    <i class="fa fa-question-circle text-xl"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- 订单基本信息 -->
+        <section class="p-4 bg-white border-b border-gray-light">
+            <div class="flex justify-between items-start mb-3">
+                <div>
+                    <h2 class="font-bold text-dark mb-1">ORD20230615002</h2>
+                    <div class="flex items-center">
+                        <span class="bg-blue-primary/20 text-blue-primary text-xs px-2 py-1 rounded-full">拍摄中</span>
+                        <span class="ml-2 text-sm text-gray-medium">李女士 (139****4321)</span>
+                    </div>
+                </div>
+                <button class="bg-gray-light text-gray-medium px-3 py-1 rounded-lg text-sm touch-friendly">
+                    <i class="fa fa-phone mr-1"></i>联系用户
+                </button>
+            </div>
+            <div class="flex justify-between text-sm">
+                <div class="flex items-center">
+                    <i class="fa fa-map-marker text-primary mr-1"></i>
+                    <span>福州鼓山-摩崖石刻</span>
+                </div>
+                <div class="flex items-center">
+                    <i class="fa fa-clock-o text-primary mr-1"></i>
+                    <span>已用时: 08:24</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 实时预览区域 -->
+        <section class="p-4">
+            <div class="miniprogram-card bg-white p-3">
+                <div class="relative">
+                    <img src="https://picsum.photos/id/1018/800/450" alt="实时拍摄画面" class="w-full aspect-video object-cover rounded-lg">
+                    <div class="absolute top-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded-full">
+                        <i class="fa fa-circle text-status-success mr-1"></i>直播中
+                    </div>
+                    <div class="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded-full">
+                        720p
+                    </div>
+                    <div class="absolute bottom-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded-full">
+                        摩崖石刻 - 特写镜头
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 拍摄进度 -->
+        <section class="p-4">
+            <div class="miniprogram-card bg-white p-4">
+                <h3 class="font-bold text-dark mb-3 flex items-center">
+                    <i class="fa fa-tasks mr-2 text-primary"></i>
+                    拍摄进度
+                </h3>
+                
+                <!-- 总体进度 -->
+                <div class="mb-4">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-sm font-medium">总体进度</span>
+                        <span class="text-sm font-medium">40%</span>
+                    </div>
+                    <div class="w-full bg-gray-light rounded-full h-2">
+                        <div class="bg-primary rounded-full h-2 transition-all duration-500" style="width: 40%"></div>
+                    </div>
+                </div>
+                
+                <!-- 样片列表 -->
+                <div class="space-y-3">
+                    <!-- 已完成样片 -->
+                    <div class="flex items-center p-3 bg-green-50 rounded-lg">
+                        <div class="w-8 h-8 rounded-full bg-status-success text-white flex items-center justify-center flex-shrink-0">
+                            <i class="fa fa-check"></i>
+                        </div>
+                        <div class="ml-3 flex-1">
+                            <div class="flex justify-between items-center">
+                                <h4 class="font-medium text-sm">全景航拍</h4>
+                                <span class="text-xs text-status-success">已完成</span>
+                            </div>
+                            <p class="text-gray-medium text-xs">15秒 | 09:15完成</p>
+                        </div>
+                    </div>
+                    
+                    <!-- 当前进行样片 -->
+                    <div class="flex items-center p-3 bg-blue-50 rounded-lg">
+                        <div class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center flex-shrink-0">
+                            <i class="fa fa-camera"></i>
+                        </div>
+                        <div class="ml-3 flex-1">
+                            <div class="flex justify-between items-center">
+                                <h4 class="font-medium text-sm">特写镜头</h4>
+                                <span class="text-xs text-primary">进行中</span>
+                            </div>
+                            <p class="text-gray-medium text-xs">10秒 | 剩余04:32</p>
+                        </div>
+                    </div>
+                    
+                    <!-- 待拍摄样片 -->
+                    <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                        <div class="w-8 h-8 rounded-full bg-gray-light text-gray-medium flex items-center justify-center flex-shrink-0">
+                            <i class="fa fa-clock-o"></i>
+                        </div>
+                        <div class="ml-3 flex-1">
+                            <div class="flex justify-between items-center">
+                                <h4 class="font-medium text-sm">延时摄影</h4>
+                                <span class="text-xs text-gray-medium">待拍摄</span>
+                            </div>
+                            <p class="text-gray-medium text-xs">30秒</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                        <div class="w-8 h-8 rounded-full bg-gray-light text-gray-medium flex items-center justify-center flex-shrink-0">
+                            <i class="fa fa-clock-o"></i>
+                        </div>
+                        <div class="ml-3 flex-1">
+                            <div class="flex justify-between items-center">
+                                <h4 class="font-medium text-sm">环绕拍摄</h4>
+                                <span class="text-xs text-gray-medium">待拍摄</span>
+                            </div>
+                            <p class="text-gray-medium text-xs">20秒</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                        <div class="w-8 h-8 rounded-full bg-gray-light text-gray-medium flex items-center justify-center flex-shrink-0">
+                            <i class="fa fa-clock-o"></i>
+                        </div>
+                        <div class="ml-3 flex-1">
+                            <div class="flex justify-between items-center">
+                                <h4 class="font-medium text-sm">高空俯拍</h4>
+                                <span class="text-xs text-gray-medium">待拍摄</span>
+                            </div>
+                            <p class="text-gray-medium text-xs">25秒</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 无人机状态 -->
+        <section class="p-4">
+            <div class="grid grid-cols-2 gap-4">
+                <!-- 飞行状态 -->
+                <div class="miniprogram-card bg-white p-4">
+                    <h3 class="font-medium text-dark mb-3">飞行状态</h3>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-gray-medium">高度</span>
+                            <span class="font-medium">45m</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-medium">距离</span>
+                            <span class="font-medium">82m</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-medium">速度</span>
+                            <span class="font-medium">5.2m/s</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-medium">航向</span>
+                            <span class="font-medium">180°</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 电池状态 -->
+                <div class="miniprogram-card bg-white p-4">
+                    <h3 class="font-medium text-dark mb-3">电池信息</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-sm text-gray-medium">电量</span>
+                                <span class="text-sm font-medium">68%</span>
+                            </div>
+                            <div class="w-full bg-gray-light rounded-full h-2">
+                                <div class="bg-status-success rounded-full h-2 transition-all duration-500" style="width: 68%"></div>
+                            </div>
+                        </div>
+                        <div class="text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-medium">剩余时间</span>
+                                <span class="font-medium">18:35</span>
+                            </div>
+                            <div class="flex justify-between mt-1">
+                                <span class="text-gray-medium">温度</span>
+                                <span class="font-medium">32°C</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 控制按钮 -->
+        <section class="p-4 pb-6">
+            <div class="space-y-3">
+                <div class="grid grid-cols-3 gap-3">
+                    <button class="bg-gray-light text-gray-medium py-3 rounded-lg font-medium touch-friendly">
+                        <i class="fa fa-pause mr-1"></i>暂停
+                    </button>
+                    <button class="bg-gray-light text-gray-medium py-3 rounded-lg font-medium touch-friendly">
+                        <i class="fa fa-repeat mr-1"></i>重拍
+                    </button>
+                    <button class="bg-gray-light text-gray-medium py-3 rounded-lg font-medium touch-friendly">
+                        <i class="fa fa-forward mr-1"></i>跳过
+                    </button>
+                </div>
+                
+                <button id="emergencyStopBtn" class="emergency-button w-full text-white py-4 rounded-lg font-medium touch-friendly">
+                    <i class="fa fa-stop-circle mr-2"></i>
+                    紧急停止召回
+                </button>
+            </div>
+        </section>
+
+        <!-- 紧急停止确认弹窗 -->
+        <div id="emergencyStopModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 hidden">
+            <div class="bg-white rounded-lg w-full max-w-md mx-4 overflow-hidden">
+                <div class="p-5 border-b border-gray-light">
+                    <h3 class="font-bold text-lg text-dark text-center">紧急停止确认</h3>
+                </div>
+                <div class="p-5">
+                    <p class="text-center text-gray-medium mb-6">
+                        确定要紧急停止并召回无人机吗？
+                        <br>
+                        <span class="text-status-danger font-medium">此操作将中断当前拍摄任务</span>
+                    </p>
+                    <div class="flex space-x-3">
+                        <button id="cancelEmergencyBtn" class="flex-1 bg-gray-light text-gray-medium py-3 rounded-lg font-medium touch-friendly">
+                            取消
+                        </button>
+                        <button id="confirmEmergencyBtn" class="flex-1 bg-status-danger text-white py-3 rounded-lg font-medium touch-friendly">
+                            确认停止
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript交互代码 -->
+    <script src="app.js"></script>
+    <script>
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 模拟实时数据更新
+            simulateRealTimeUpdates();
+        });
+
+        // 模拟实时数据更新
+        function simulateRealTimeUpdates() {
+            let altitude = 45;
+            let distance = 82;
+            let batteryLevel = 68;
+            let remainingTime = 18 * 60 + 35; // 18:35 in seconds
+            let usedTime = 8 * 60 + 24; // 08:24 in seconds
+            let progress = 40;
+            
+            const updateInterval = setInterval(() => {
+                // 更新高度和距离（模拟随机小幅度变化）
+                altitude = Math.max(10, Math.min(100, altitude + (Math.random() - 0.5) * 2));
+                distance = Math.max(50, Math.min(200, distance + (Math.random() - 0.5) * 3));
+                
+                // 更新电池和时间
+                batteryLevel = Math.max(0, batteryLevel - 0.01);
+                remainingTime -= 1;
+                usedTime += 1;
+                
+                // 更新进度
+                if (progress < 45) {
+                    progress += 0.02;
+                }
+                
+                // 更新DOM
+                document.querySelector('.space-y-2.text-sm div:nth-child(1) span:nth-child(2)').textContent = `${altitude.toFixed(1)}m`;
+                document.querySelector('.space-y-2.text-sm div:nth-child(2) span:nth-child(2)').textContent = `${distance.toFixed(1)}m`;
+                
+                // 更新电池信息
+                document.querySelector('.bg-status-success.rounded-full.h-2').style.width = `${batteryLevel}%`;
+                document.querySelector('.space-y-3 .text-sm div:nth-child(1) span:nth-child(2)').textContent = `${batteryLevel.toFixed(0)}%`;
+                
+                // 格式化剩余时间
+                const remainingMinutes = Math.floor(remainingTime / 60);
+                const remainingSeconds = remainingTime % 60;
+                document.querySelector('.space-y-3 .text-sm div:nth-child(2) span:nth-child(2)').textContent = `${remainingMinutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+                
+                // 格式化已用时间
+                const usedMinutes = Math.floor(usedTime / 60);
+                const usedSeconds = usedTime % 60;
+                document.querySelector('.flex.justify-between.text-sm div:nth-child(2) span').textContent = `已用时: ${usedMinutes.toString().padStart(2, '0')}:${usedSeconds.toString().padStart(2, '0')}`;
+                
+                // 更新总体进度
+                document.querySelector('.flex.justify-between.items-center.mb-1 span:nth-child(2)').textContent = `${progress.toFixed(0)}%`;
+                document.querySelector('.bg-primary.rounded-full.h-2').style.width = `${progress}%`;
+                
+                // 如果电池低于20%，显示警告
+                if (batteryLevel < 20) {
+                    document.querySelector('.bg-status-success.rounded-full.h-2').classList.remove('bg-status-success');
+                    document.querySelector('.bg-status-success.rounded-full.h-2').classList.add('bg-status-warning');
+                }
+                
+                // 如果电池低于10%，显示危险警告
+                if (batteryLevel < 10) {
+                    document.querySelector('.bg-status-warning.rounded-full.h-2').classList.remove('bg-status-warning');
+                    document.querySelector('.bg-status-warning.rounded-full.h-2').classList.add('bg-status-danger');
+                }
+                
+                // 如果进度达到100%，停止更新
+                if (progress >= 100) {
+                    clearInterval(updateInterval);
+                    showToast('拍摄任务已完成');
+                    setTimeout(() => {
+                        window.location.href = 'order.html';
+                    }, 2000);
+                }
+                
+                // 如果电池耗尽，停止更新
+                if (batteryLevel <= 0) {
+                    clearInterval(updateInterval);
+                    showToast('电池电量已耗尽，无人机正在自动返航');
+                    setTimeout(() => {
+                        window.location.href = 'order.html';
+                    }, 2000);
+                }
+            }, 1000);
+        }
+
+        // 紧急停止按钮点击事件
+        const emergencyStopBtn = document.getElementById('emergencyStopBtn');
+        const emergencyStopModal = document.getElementById('emergencyStopModal');
+        const cancelEmergencyBtn = document.getElementById('cancelEmergencyBtn');
+        const confirmEmergencyBtn = document.getElementById('confirmEmergencyBtn');
+
+        emergencyStopBtn.addEventListener('click', () => {
+            emergencyStopModal.classList.remove('hidden');
+        });
+
+        cancelEmergencyBtn.addEventListener('click', () => {
+            emergencyStopModal.classList.add('hidden');
+        });
+
+        confirmEmergencyBtn.addEventListener('click', () => {
+            emergencyStopModal.classList.add('hidden');
+            showToast('无人机正在紧急返航');
+            
+            // 模拟无人机返航过程
+            setTimeout(() => {
+                window.location.href = 'order.html';
+            }, 3000);
+        });
+
+        // 点击弹窗外部关闭
+        emergencyStopModal.addEventListener('click', (e) => {
+            if (e.target === emergencyStopModal) {
+                emergencyStopModal.classList.add('hidden');
+            }
+        });
+
+        // 显示帮助信息
+        function showHelp() {
+            showToast('操作指南：点击紧急停止可立即召回无人机');
+        }
+    </script>
+</body>
+</html>

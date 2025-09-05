@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>合伙人登录 - 无人机管理系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#1E40AF',
+                        accent: '#06B6D4',
+                        dark: '#1E293B',
+                        light: '#F8FAFC',
+                        'gray-medium': '#64748B',
+                        'gray-light': '#E2E8F0',
+                        'blue-primary': '#3B82F6',
+                        'blue-secondary': '#1D4ED8',
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            }
+            .touch-friendly {
+                touch-action: manipulation;
+                -webkit-tap-highlight-color: transparent;
+            }
+            .safe-area-bottom {
+                padding-bottom: constant(safe-area-inset-bottom);
+                padding-bottom: env(safe-area-inset-bottom);
+            }
+            .miniprogram-card {
+                box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+                border-radius: 8px;
+            }
+            .form-input:focus {
+                border-color: var(--primary);
+                box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            }
+        }
+    </style>
+</head>
+<body class="font-inter bg-gradient-to-b from-blue-50 to-white text-dark antialiased touch-action-manipulation">
+    <!-- 页面容器 -->
+    <div class="min-h-screen w-full flex flex-col">
+        <!-- 顶部Logo区域 -->
+        <div class="flex-1 flex flex-col items-center justify-center p-6">
+            <div class="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mb-8">
+                <i class="fa fa-paper-plane text-primary text-4xl"></i>
+            </div>
+            <h1 class="text-2xl font-bold mb-1">合伙人管理系统</h1>
+            <p class="text-gray-medium text-sm mb-12">专业的无人机拍摄管理平台</p>
+
+            <!-- 登录表单 -->
+            <div class="w-full max-w-md">
+                <div class="miniprogram-card bg-white p-6 rounded-lg">
+                    <!-- 登录方式切换 -->
+                    <div class="flex border-b border-gray-light mb-6">
+                        <button id="phoneLoginBtn" class="flex-1 text-center pb-3 font-medium text-primary border-b-2 border-primary">
+                            短信登录
+                        </button>
+                        <button id="pwdLoginBtn" class="flex-1 text-center pb-3 font-medium text-gray-medium">
+                            密码登录
+                        </button>
+                    </div>
+
+                    <!-- 手机号登录表单 -->
+                    <div id="phoneLoginForm">
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-dark mb-2">手机号码</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-medium">+86</span>
+                                <input type="tel" id="phoneInput" class="form-input w-full p-3 pl-12 border border-gray-light rounded-lg focus:outline-none" placeholder="请输入手机号码" maxlength="11">
+                            </div>
+                        </div>
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-dark mb-2">验证码</label>
+                            <div class="flex space-x-3">
+                                <input type="text" id="smsCodeInput" class="form-input flex-1 p-3 border border-gray-light rounded-lg focus:outline-none" placeholder="请输入验证码" maxlength="6">
+                                <button id="getSmsBtn" class="px-4 py-3 bg-primary/10 text-primary rounded-lg font-medium whitespace-nowrap touch-friendly">
+                                    获取验证码
+                                </button>
+                            </div>
+                        </div>
+                        <button id="phoneLoginSubmitBtn" class="w-full bg-primary text-white py-3 rounded-lg font-medium touch-friendly mb-4">
+                            登录
+                        </button>
+                    </div>
+
+                    <!-- 密码登录表单 -->
+                    <div id="pwdLoginForm" class="hidden">
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-dark mb-2">手机号码</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-medium">+86</span>
+                                <input type="tel" id="pwdPhoneInput" class="form-input w-full p-3 pl-12 border border-gray-light rounded-lg focus:outline-none" placeholder="请输入手机号码" maxlength="11">
+                            </div>
+                        </div>
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-dark mb-2">登录密码</label>
+                            <div class="relative">
+                                <input type="password" id="passwordInput" class="form-input w-full p-3 border border-gray-light rounded-lg focus:outline-none" placeholder="请输入登录密码">
+                                <button id="togglePwdBtn" class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-medium">
+                                    <i class="fa fa-eye-slash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <button id="pwdLoginSubmitBtn" class="w-full bg-primary text-white py-3 rounded-lg font-medium touch-friendly mb-4">
+                            登录
+                        </button>
+                        <button id="forgotPwdBtn" class="w-full text-primary text-sm font-medium touch-friendly">
+                            忘记密码？
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部信息 -->
+        <div class="py-6 px-4 text-center">
+            <p class="text-gray-medium text-xs">
+                登录即表示您同意我们的
+                <a href="#" class="text-primary">《用户协议》</a>和
+                <a href="#" class="text-primary">《隐私政策》</a>
+            </p>
+            <p class="text-gray-medium text-xs mt-2">
+                © 2023 无人机管理系统 版权所有
+            </p>
+        </div>
+    </div>
+
+    <!-- 重置密码弹窗 -->
+    <div id="resetPwdModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 hidden">
+        <div class="bg-white rounded-lg w-full max-w-md mx-4 overflow-hidden">
+            <div class="p-5 border-b border-gray-light">
+                <h3 class="font-bold text-lg text-dark">重置密码</h3>
+            </div>
+            <div class="p-5">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-dark mb-2">手机号码</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-medium">+86</span>
+                        <input type="tel" id="resetPhoneInput" class="form-input w-full p-3 pl-12 border border-gray-light rounded-lg focus:outline-none" placeholder="请输入手机号码" maxlength="11">
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-dark mb-2">验证码</label>
+                    <div class="flex space-x-3">
+                        <input type="text" id="resetSmsCodeInput" class="form-input flex-1 p-3 border border-gray-light rounded-lg focus:outline-none" placeholder="请输入验证码" maxlength="6">
+                        <button id="resetGetSmsBtn" class="px-4 py-3 bg-primary/10 text-primary rounded-lg font-medium whitespace-nowrap touch-friendly">
+                            获取验证码
+                        </button>
+                    </div>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-dark mb-2">新密码</label>
+                    <input type="password" id="newPasswordInput" class="form-input w-full p-3 border border-gray-light rounded-lg focus:outline-none" placeholder="请设置6-20位密码">
+                </div>
+                <div class="flex space-x-3">
+                    <button id="resetCancelBtn" class="flex-1 bg-gray-light text-gray-medium py-3 rounded-lg font-medium touch-friendly">
+                        取消
+                    </button>
+                    <button id="resetConfirmBtn" class="flex-1 bg-primary text-white py-3 rounded-lg font-medium touch-friendly">
+                        确认重置
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript交互代码 -->
+    <script src="app.js"></script>
+    <script>
+        // 登录方式切换
+        const phoneLoginBtn = document.getElementById('phoneLoginBtn');
+        const pwdLoginBtn = document.getElementById('pwdLoginBtn');
+        const phoneLoginForm = document.getElementById('phoneLoginForm');
+        const pwdLoginForm = document.getElementById('pwdLoginForm');
+
+        phoneLoginBtn.addEventListener('click', () => {
+            phoneLoginForm.classList.remove('hidden');
+            pwdLoginForm.classList.add('hidden');
+            phoneLoginBtn.classList.add('text-primary', 'border-b-2', 'border-primary');
+            phoneLoginBtn.classList.remove('text-gray-medium');
+            pwdLoginBtn.classList.add('text-gray-medium');
+            pwdLoginBtn.classList.remove('text-primary', 'border-b-2', 'border-primary');
+        });
+
+        pwdLoginBtn.addEventListener('click', () => {
+            phoneLoginForm.classList.add('hidden');
+            pwdLoginForm.classList.remove('hidden');
+            pwdLoginBtn.classList.add('text-primary', 'border-b-2', 'border-primary');
+            pwdLoginBtn.classList.remove('text-gray-medium');
+            phoneLoginBtn.classList.add('text-gray-medium');
+            phoneLoginBtn.classList.remove('text-primary', 'border-b-2', 'border-primary');
+        });
+
+        // 密码显示切换
+        const togglePwdBtn = document.getElementById('togglePwdBtn');
+        const passwordInput = document.getElementById('passwordInput');
+
+        togglePwdBtn.addEventListener('click', () => {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            togglePwdBtn.innerHTML = type === 'password' ? '<i class="fa fa-eye-slash"></i>' : '<i class="fa fa-eye"></i>';
+        });
+
+        // 忘记密码弹窗
+        const forgotPwdBtn = document.getElementById('forgotPwdBtn');
+        const resetPwdModal = document.getElementById('resetPwdModal');
+        const resetCancelBtn = document.getElementById('resetCancelBtn');
+
+        forgotPwdBtn.addEventListener('click', () => {
+            resetPwdModal.classList.remove('hidden');
+        });
+
+        resetCancelBtn.addEventListener('click', () => {
+            resetPwdModal.classList.add('hidden');
+        });
+
+        // 点击弹窗外部关闭
+        resetPwdModal.addEventListener('click', (e) => {
+            if (e.target === resetPwdModal) {
+                resetPwdModal.classList.add('hidden');
+            }
+        });
+
+        // 获取验证码
+        const getSmsBtn = document.getElementById('getSmsBtn');
+        const resetGetSmsBtn = document.getElementById('resetGetSmsBtn');
+
+        function startCountdown(button) {
+            let seconds = 60;
+            button.disabled = true;
+            button.classList.add('bg-gray-light');
+            button.classList.remove('bg-primary/10', 'text-primary');
+            button.textContent = `${seconds}秒后重新获取`;
+
+            const timer = setInterval(() => {
+                seconds--;
+                button.textContent = `${seconds}秒后重新获取`;
+                if (seconds <= 0) {
+                    clearInterval(timer);
+                    button.disabled = false;
+                    button.classList.remove('bg-gray-light');
+                    button.classList.add('bg-primary/10', 'text-primary');
+                    button.textContent = '获取验证码';
+                }
+            }, 1000);
+        }
+
+        getSmsBtn.addEventListener('click', () => {
+            const phone = document.getElementById('phoneInput').value.trim();
+            if (phone.length === 0) {
+                showToast('请输入手机号码');
+                return;
+            }
+            // 模拟发送验证码
+            showToast('验证码已发送');
+            startCountdown(getSmsBtn);
+        });
+
+        resetGetSmsBtn.addEventListener('click', () => {
+            const phone = document.getElementById('resetPhoneInput').value.trim();
+            if (phone.length === 0) {
+                showToast('请输入手机号码');
+                return;
+            }
+            // 模拟发送验证码
+            showToast('验证码已发送');
+            startCountdown(resetGetSmsBtn);
+        });
+
+        // 登录提交
+        const phoneLoginSubmitBtn = document.getElementById('phoneLoginSubmitBtn');
+        const pwdLoginSubmitBtn = document.getElementById('pwdLoginSubmitBtn');
+
+        phoneLoginSubmitBtn.addEventListener('click', () => {
+            const phone = document.getElementById('phoneInput').value.trim();
+            const smsCode = document.getElementById('smsCodeInput').value.trim();
+
+            if (smsCode.length === 0) {
+                showToast('请输入验证码');
+                return;
+            }
+
+            // 模拟登录验证
+            phoneLoginSubmitBtn.disabled = true;
+            phoneLoginSubmitBtn.textContent = '登录中...';
+            
+            setTimeout(() => {
+                // 登录成功后跳转到订单页面
+                window.location.href = 'order.html';
+            }, 1500);
+        });
+
+        pwdLoginSubmitBtn.addEventListener('click', () => {
+            const phone = document.getElementById('pwdPhoneInput').value.trim();
+            const password = document.getElementById('passwordInput').value.trim();
+
+            if (password.length < 6) {
+                showToast('密码长度不能少于6位');
+                return;
+            }
+
+            // 模拟登录验证
+            pwdLoginSubmitBtn.disabled = true;
+            pwdLoginSubmitBtn.textContent = '登录中...';
+            
+            setTimeout(() => {
+                // 登录成功后跳转到订单页面
+                window.location.href = 'order.html';
+            }, 1500);
+        });
+
+        // 重置密码确认
+        const resetConfirmBtn = document.getElementById('resetConfirmBtn');
+
+        resetConfirmBtn.addEventListener('click', () => {
+            const phone = document.getElementById('resetPhoneInput').value.trim();
+            const smsCode = document.getElementById('resetSmsCodeInput').value.trim();
+            const newPassword = document.getElementById('newPasswordInput').value.trim();
+
+            if (smsCode.length === 0) {
+                showToast('请输入验证码');
+                return;
+            }
+
+            if (newPassword.length < 6 || newPassword.length > 20) {
+                showToast('密码长度应为6-20位');
+                return;
+            }
+
+            // 模拟重置密码
+            resetConfirmBtn.disabled = true;
+            resetConfirmBtn.textContent = '重置中...';
+            
+            setTimeout(() => {
+                showToast('密码重置成功');
+                resetPwdModal.classList.add('hidden');
+                resetConfirmBtn.disabled = false;
+                resetConfirmBtn.textContent = '确认重置';
+            }, 1500);
+        });
+    </script>
+</body>
+</html>

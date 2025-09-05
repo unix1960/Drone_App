@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>我的 - 合伙人管理系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#1E40AF',
+                        accent: '#06B6D4',
+                        dark: '#1E293B',
+                        light: '#F8FAFC',
+                        'gray-medium': '#64748B',
+                        'gray-light': '#E2E8F0',
+                        'blue-primary': '#3B82F6',
+                        'blue-secondary': '#1D4ED8',
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            }
+            .touch-friendly {
+                touch-action: manipulation;
+                -webkit-tap-highlight-color: transparent;
+            }
+            .safe-area-bottom {
+                padding-bottom: constant(safe-area-inset-bottom);
+                padding-bottom: env(safe-area-inset-bottom);
+            }
+            .miniprogram-card {
+                box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+                border-radius: 8px;
+            }
+            .setting-item:active {
+                background-color: rgba(0,0,0,0.03);
+            }
+            .elder-mode {
+                font-size: 18px;
+            }
+            .elder-mode .setting-item {
+                height: 60px;
+                padding: 0 20px;
+            }
+            .elder-mode .setting-item i {
+                font-size: 24px;
+            }
+            .elder-mode .setting-item span {
+                font-size: 18px;
+            }
+            .toggle-switch {
+                position: relative;
+                display: inline-block;
+                width: 50px;
+                height: 26px;
+            }
+            .toggle-switch input {
+                opacity: 0;
+                width: 0;
+                height: 0;
+            }
+            .toggle-slider {
+                position: absolute;
+                cursor: pointer;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: #ccc;
+                transition: .4s;
+                border-radius: 26px;
+            }
+            .toggle-slider:before {
+                position: absolute;
+                content: "";
+                height: 18px;
+                width: 18px;
+                left: 4px;
+                bottom: 4px;
+                background-color: white;
+                transition: .4s;
+                border-radius: 50%;
+            }
+            input:checked + .toggle-slider {
+                background-color: var(--primary);
+            }
+            input:checked + .toggle-slider:before {
+                transform: translateX(24px);
+            }
+        }
+    </style>
+</head>
+<body class="font-inter bg-light text-dark antialiased touch-action-manipulation" id="appBody">
+    <!-- 页面容器 -->
+    <div class="min-h-screen w-full pb-24 safe-area-bottom">
+        <!-- 头部导航 -->
+        <header class="bg-white border-b border-gray-light sticky top-0 z-40">
+            <div class="flex items-center justify-between h-14 px-4">
+                <button onclick="navigateToPage('login.html')" class="flex items-center text-gray-medium touch-friendly">
+                    <i class="fa fa-sign-out mr-1"></i>
+                    <span class="text-sm">退出</span>
+                </button>
+                <h1 class="font-bold text-dark">我的</h1>
+                <button onclick="showNotifications()" class="relative text-gray-medium touch-friendly">
+                    <i class="fa fa-bell text-xl"></i>
+                    <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-white text-[10px] flex items-center justify-center">2</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- 用户信息 -->
+        <section class="p-4">
+            <div class="miniprogram-card bg-gradient-to-r from-primary to-blue-secondary p-4 text-white">
+                <div class="flex items-center">
+                    <div class="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center mr-4">
+                        <i class="fa fa-user-circle text-3xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-lg mb-1">张合伙人</h2>
+                        <p class="text-white/80 text-sm">ID: 10086</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 常用功能 -->
+        <section class="p-4">
+            <div class="miniprogram-card bg-white">
+                <div class="grid grid-cols-3 gap-0">
+                    <div class="border-r border-b border-gray-light p-4 text-center touch-friendly" onclick="location.href='order.html'">
+                        <i class="fa fa-list-alt text-primary text-xl mb-2"></i>
+                        <p class="text-sm">我的订单</p>
+                    </div>
+                    <div class="border-r border-b border-gray-light p-4 text-center touch-friendly" onclick="location.href='device.html'">
+                        <i class="fa fa-cube text-primary text-xl mb-2"></i>
+                        <p class="text-sm">设备管理</p>
+                    </div>
+                    <div class="border-b border-gray-light p-4 text-center touch-friendly" onclick="location.href='report.html'">
+                        <i class="fa fa-bar-chart text-primary text-xl mb-2"></i>
+                        <p class="text-sm">运营报表</p>
+                    </div>
+                    <div class="border-r border-gray-light p-4 text-center touch-friendly">
+                        <i class="fa fa-cog text-primary text-xl mb-2"></i>
+                        <p class="text-sm">设置</p>
+                    </div>
+                    <div class="border-r border-gray-light p-4 text-center touch-friendly">
+                        <i class="fa fa-question-circle text-primary text-xl mb-2"></i>
+                        <p class="text-sm">帮助</p>
+                    </div>
+                    <div class="p-4 text-center touch-friendly">
+                        <i class="fa fa-star text-primary text-xl mb-2"></i>
+                        <p class="text-sm">收藏</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 设置列表 -->
+        <section class="p-4">
+            <div class="miniprogram-card bg-white">
+                <!-- 长者模式 -->
+                <div class="flex items-center justify-between h-14 px-4 border-b border-gray-light setting-item touch-friendly" id="elderModeItem">
+                    <div class="flex items-center">
+                        <i class="fa fa-text-height text-primary mr-3"></i>
+                        <span>长者模式</span>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="elderModeToggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <!-- 运维模式 -->
+                <div class="flex items-center justify-between h-14 px-4 border-b border-gray-light setting-item touch-friendly" id="maintenanceModeItem">
+                    <div class="flex items-center">
+                        <i class="fa fa-tools text-primary mr-3"></i>
+                        <span>运维模式</span>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="maintenanceModeToggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <!-- 无人机信息 -->
+                <div class="flex items-center justify-between h-14 px-4 border-b border-gray-light setting-item touch-friendly" onclick="navigateToPage('device.html')">
+                    <div class="flex items-center">
+                        <i class="fa fa-cube text-primary mr-3"></i>
+                        <span>无人机信息</span>
+                    </div>
+                    <i class="fa fa-angle-right text-gray-medium"></i>
+                </div>
+                
+                <!-- 服务景点 -->
+                <div class="flex items-center justify-between h-14 px-4 border-b border-gray-light setting-item touch-friendly" onclick="showServiceSpots()">
+                    <div class="flex items-center">
+                        <i class="fa fa-map-marker text-primary mr-3"></i>
+                        <span>服务景点</span>
+                    </div>
+                    <i class="fa fa-angle-right text-gray-medium"></i>
+                </div>
+                
+                <!-- 修改密码 -->
+                <div class="flex items-center justify-between h-14 px-4 border-b border-gray-light setting-item touch-friendly" onclick="changePassword()">
+                    <div class="flex items-center">
+                        <i class="fa fa-lock text-primary mr-3"></i>
+                        <span>修改密码</span>
+                    </div>
+                    <i class="fa fa-angle-right text-gray-medium"></i>
+                </div>
+                
+                <!-- 帮助中心 -->
+                <div class="flex items-center justify-between h-14 px-4 border-b border-gray-light setting-item touch-friendly" onclick="showHelpCenter()">
+                    <div class="flex items-center">
+                        <i class="fa fa-question-circle text-primary mr-3"></i>
+                        <span>帮助中心</span>
+                    </div>
+                    <i class="fa fa-angle-right text-gray-medium"></i>
+                </div>
+                
+                <!-- 关于我们 -->
+                <div class="flex items-center justify-between h-14 px-4 setting-item touch-friendly" onclick="showAboutUs()">
+                    <div class="flex items-center">
+                        <i class="fa fa-info-circle text-primary mr-3"></i>
+                        <span>关于我们</span>
+                    </div>
+                    <i class="fa fa-angle-right text-gray-medium"></i>
+                </div>
+            </div>
+        </section>
+
+        <!-- 客服热线 -->
+        <section class="p-4">
+            <div class="miniprogram-card bg-white">
+                <div class="flex items-center justify-between h-14 px-4 setting-item touch-friendly" onclick="callService()">
+                    <div class="flex items-center">
+                        <i class="fa fa-phone text-primary mr-3"></i>
+                        <span>客服热线</span>
+                    </div>
+                    <div class="flex items-center text-primary">
+                        <span>400-888-9999</span>
+                        <i class="fa fa-angle-right ml-2 text-gray-medium"></i>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 退出登录按钮 -->
+        <section class="p-4">
+            <button id="logoutBtn" class="w-full bg-gray-light text-gray-medium py-3 rounded-lg font-medium touch-friendly">
+                退出登录
+            </button>
+        </section>
+
+        <!-- 服务景点弹窗 -->
+        <div id="serviceSpotsModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 hidden">
+            <div class="bg-white rounded-lg w-full max-w-md mx-4 max-h-[80vh] overflow-y-auto">
+                <div class="p-5 border-b border-gray-light flex justify-between items-center">
+                    <h3 class="font-bold text-lg text-dark">服务景点</h3>
+                    <button onclick="closeServiceSpots()" class="text-gray-medium">
+                        <i class="fa fa-times text-xl"></i>
+                    </button>
+                </div>
+                <div class="p-5 space-y-4">
+                    <div class="space-y-3">
+                        <div class="flex items-center p-3 border border-gray-light rounded-lg">
+                            <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mr-3">
+                                <i class="fa fa-map-marker text-primary"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-medium">福州鼓山景区</h4>
+                                <p class="text-sm text-gray-medium mt-1">负责景点：涌泉寺、摩崖石刻、登山古径、屴崱峰、回龙阁、灵源洞、罗汉台、香炉峰、白云洞</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 运维模式登录弹窗 -->
+        <div id="maintenanceLoginModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 hidden">
+            <div class="bg-white rounded-lg w-full max-w-md mx-4 overflow-hidden">
+                <div class="p-5 border-b border-gray-light">
+                    <h3 class="font-bold text-lg text-dark">运维模式登录</h3>
+                </div>
+                <div class="p-5">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-dark mb-2">运维账号</label>
+                        <input type="text" id="maintenanceUsername" class="w-full p-3 border border-gray-light rounded-lg focus:outline-none" placeholder="请输入运维账号">
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-dark mb-2">运维密码</label>
+                        <input type="password" id="maintenancePassword" class="w-full p-3 border border-gray-light rounded-lg focus:outline-none" placeholder="请输入运维密码">
+                    </div>
+                    <div class="flex space-x-3">
+                        <button id="cancelMaintenanceLoginBtn" class="flex-1 bg-gray-light text-gray-medium py-3 rounded-lg font-medium touch-friendly">
+                            取消
+                        </button>
+                        <button id="confirmMaintenanceLoginBtn" class="flex-1 bg-primary text-white py-3 rounded-lg font-medium touch-friendly">
+                            登录
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部导航栏 -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-light z-50 safe-area-bottom">
+        <div class="flex justify-around items-center h-16">
+            <div class="tab-item flex flex-col items-center justify-center text-gray-medium touch-friendly" data-page="order" onclick="location.href='order.html'">
+                <i class="fa fa-list-alt text-lg mb-1"></i>
+                <span class="text-xs">订单</span>
+            </div>
+            <div class="tab-item flex flex-col items-center justify-center text-gray-medium touch-friendly" data-page="device" onclick="location.href='device.html'">
+                <i class="fa fa-cube text-lg mb-1"></i>
+                <span class="text-xs">设备</span>
+            </div>
+            <div class="tab-item flex flex-col items-center justify-center text-gray-medium touch-friendly" data-page="report" onclick="location.href='report.html'">
+                <i class="fa fa-bar-chart text-lg mb-1"></i>
+                <span class="text-xs">报表</span>
+            </div>
+            <div class="tab-item flex flex-col items-center justify-center text-primary touch-friendly active" data-page="profile">
+                <i class="fa fa-user text-lg mb-1"></i>
+                <span class="text-xs">我的</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- JavaScript交互代码 -->
+    <script src="app.js"></script>
+    <script>
+        // 长者模式切换
+        const elderModeToggle = document.getElementById('elderModeToggle');
+        const appBody = document.getElementById('appBody');
+
+        elderModeToggle.addEventListener('change', () => {
+            if (elderModeToggle.checked) {
+                appBody.classList.add('elder-mode');
+                showToast('已开启长者模式');
+            } else {
+                appBody.classList.remove('elder-mode');
+                showToast('已关闭长者模式');
+            }
+        });
+
+        // 运维模式切换
+        const maintenanceModeToggle = document.getElementById('maintenanceModeToggle');
+        const maintenanceLoginModal = document.getElementById('maintenanceLoginModal');
+        const cancelMaintenanceLoginBtn = document.getElementById('cancelMaintenanceLoginBtn');
+        const confirmMaintenanceLoginBtn = document.getElementById('confirmMaintenanceLoginBtn');
+
+        maintenanceModeToggle.addEventListener('change', () => {
+            if (maintenanceModeToggle.checked) {
+                // 如果要开启运维模式，需要先登录
+                maintenanceLoginModal.classList.remove('hidden');
+            } else {
+                // 直接关闭运维模式
+                showToast('已关闭运维模式');
+            }
+        });
+
+        cancelMaintenanceLoginBtn.addEventListener('click', () => {
+            maintenanceLoginModal.classList.add('hidden');
+            maintenanceModeToggle.checked = false;
+        });
+
+        confirmMaintenanceLoginBtn.addEventListener('click', () => {
+            const username = document.getElementById('maintenanceUsername').value.trim();
+            const password = document.getElementById('maintenancePassword').value.trim();
+
+            if (!username || !password) {
+                showToast('请输入运维账号和密码');
+                return;
+            }
+
+            // 模拟登录验证
+            confirmMaintenanceLoginBtn.disabled = true;
+            confirmMaintenanceLoginBtn.textContent = '登录中...';
+            
+            setTimeout(() => {
+                // 假设登录成功
+                showToast('运维模式已开启');
+                maintenanceLoginModal.classList.add('hidden');
+                confirmMaintenanceLoginBtn.disabled = false;
+                confirmMaintenanceLoginBtn.textContent = '登录';
+                
+                // 实际应用中应跳转到运维模式页面或显示运维模式的额外功能
+                // 这里我们简单地改变一下界面样式表示已进入运维模式
+                const maintenanceModeItem = document.getElementById('maintenanceModeItem');
+                maintenanceModeItem.classList.add('bg-primary/5');
+            }, 1500);
+        });
+
+        // 点击弹窗外部关闭
+        maintenanceLoginModal.addEventListener('click', (e) => {
+            if (e.target === maintenanceLoginModal) {
+                maintenanceLoginModal.classList.add('hidden');
+                maintenanceModeToggle.checked = false;
+            }
+        });
+
+        // 服务景点弹窗
+        const serviceSpotsModal = document.getElementById('serviceSpotsModal');
+
+        function showServiceSpots() {
+            serviceSpotsModal.classList.remove('hidden');
+        }
+
+        function closeServiceSpots() {
+            serviceSpotsModal.classList.add('hidden');
+        }
+
+        // 点击弹窗外部关闭
+        serviceSpotsModal.addEventListener('click', (e) => {
+            if (e.target === serviceSpotsModal) {
+                serviceSpotsModal.classList.add('hidden');
+            }
+        });
+
+        // 修改密码
+        function changePassword() {
+            // 这里可以跳转到修改密码页面，或者直接显示修改密码弹窗
+            // 为了简单起见，我们复用登录页面的重置密码功能
+            showToast('跳转到修改密码页面');
+            // 在实际应用中，应该跳转到专门的修改密码页面或显示修改密码弹窗
+        }
+
+        // 帮助中心
+        function showHelpCenter() {
+            showToast('打开帮助中心');
+            // 实际应用中应跳转到帮助中心页面
+        }
+
+        // 关于我们
+        function showAboutUs() {
+            showToast('打开关于我们');
+            // 实际应用中应跳转到关于我们页面
+        }
+
+        // 客服电话
+        function callService() {
+            // 小程序中应使用 wx.makePhoneCall
+            if (typeof wx !== 'undefined') {
+                wx.makePhoneCall({
+                    phoneNumber: '400-888-9999'
+                });
+            } else {
+                window.open('tel:400-888-9999');
+            }
+        }
+
+        // 退出登录
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        logoutBtn.addEventListener('click', () => {
+            if (confirm('确定要退出登录吗？')) {
+                showToast('正在退出登录...');
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 1000);
+            }
+        });
+
+        // 显示通知
+        function showNotifications() {
+            showToast('查看通知');
+            // 实际应用中应显示通知列表或跳转到通知页面
+        }
+    </script>
+</body>
+</html>

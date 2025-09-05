@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>订单管理 - 合伙人管理系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#1E40AF',
+                        accent: '#06B6D4',
+                        dark: '#1E293B',
+                        light: '#F8FAFC',
+                        'gray-medium': '#64748B',
+                        'gray-light': '#E2E8F0',
+                        'blue-primary': '#3B82F6',
+                        'blue-secondary': '#1D4ED8',
+                        'status-pending': '#F59E0B',
+                        'status-processing': '#3B82F6',
+                        'status-completed': '#10B981',
+                        'status-canceled': '#6B7280',
+                        'status-failed': '#EF4444',
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            }
+            .touch-friendly {
+                touch-action: manipulation;
+                -webkit-tap-highlight-color: transparent;
+            }
+            .safe-area-bottom {
+                padding-bottom: constant(safe-area-inset-bottom);
+                padding-bottom: env(safe-area-inset-bottom);
+            }
+            .miniprogram-card {
+                box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+                border-radius: 8px;
+            }
+            .progress-ring-circle {
+                transition: stroke-dashoffset 0.35s;
+                transform: rotate(-90deg);
+                transform-origin: 50% 50%;
+            }
+        }
+    </style>
+</head>
+<body class="font-inter bg-light text-dark antialiased touch-action-manipulation">
+    <!-- 页面容器 -->
+    <div class="min-h-screen w-full pb-24 safe-area-bottom">
+        <!-- 头部导航 -->
+        <header class="bg-white border-b border-gray-light sticky top-0 z-40">
+            <div class="flex items-center justify-between h-14 px-4">
+                <button onclick="navigateToPage('login.html')" class="flex items-center text-gray-medium touch-friendly">
+                    <i class="fa fa-sign-out mr-1"></i>
+                    <span class="text-sm">退出</span>
+                </button>
+                <h1 class="font-bold text-dark">订单管理</h1>
+                <button onclick="showNotifications()" class="relative text-gray-medium touch-friendly">
+                    <i class="fa fa-bell text-xl"></i>
+                    <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-white text-[10px] flex items-center justify-center">3</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- 今日概览 -->
+        <section class="p-4">
+            <div class="miniprogram-card bg-gradient-to-r from-primary to-blue-secondary p-5 text-white">
+                <h2 class="font-bold text-lg mb-4">今日概览</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-white/20 backdrop-blur-sm rounded-lg p-4">
+                        <p class="text-white/80 text-sm mb-1">今日订单</p>
+                        <div class="flex items-baseline">
+                            <span class="text-3xl font-bold mr-2">12</span>
+                            <span class="text-xs text-white/80">单</span>
+                        </div>
+                    </div>
+                    <div class="bg-white/20 backdrop-blur-sm rounded-lg p-4">
+                        <p class="text-white/80 text-sm mb-1">今日收益</p>
+                        <div class="flex items-baseline">
+                            <span class="text-3xl font-bold mr-2">¥1,356</span>
+                            <span class="text-xs text-white/80">元</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 快捷操作 -->
+        <section class="p-4">
+            <div class="grid grid-cols-2 gap-4">
+                <!-- 扫码执行订单 -->
+                <div class="miniprogram-card bg-white p-4 text-center touch-friendly" onclick="scanQRCode()">
+                    <div class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                        <i class="fa fa-qrcode text-primary text-2xl"></i>
+                    </div>
+                    <h3 class="font-medium text-dark">扫码执行订单</h3>
+                </div>
+                <!-- 样片预览 -->
+                <div class="miniprogram-card bg-white p-4 text-center touch-friendly" onclick="previewSamples()">
+                    <div class="w-16 h-16 rounded-full bg-secondary/10 flex items-center justify-center mx-auto mb-3">
+                        <i class="fa fa-picture-o text-secondary text-2xl"></i>
+                    </div>
+                    <h3 class="font-medium text-dark">样片预览</h3>
+                </div>
+            </div>
+        </section>
+
+        <!-- 订单状态筛选 -->
+        <section class="px-4 py-2">
+            <div class="flex overflow-x-auto space-x-2 pb-2 scrollbar-hide">
+                <button class="whitespace-nowrap px-4 py-2 bg-primary text-white rounded-full text-sm font-medium touch-friendly order-filter active" data-status="all">
+                    全部订单
+                </button>
+                <button class="whitespace-nowrap px-4 py-2 bg-gray-light text-gray-medium rounded-full text-sm font-medium touch-friendly order-filter" data-status="pending">
+                    待拍摄
+                </button>
+                <button class="whitespace-nowrap px-4 py-2 bg-gray-light text-gray-medium rounded-full text-sm font-medium touch-friendly order-filter" data-status="shooting">
+                    拍摄中
+                </button>
+                <button class="whitespace-nowrap px-4 py-2 bg-gray-light text-gray-medium rounded-full text-sm font-medium touch-friendly order-filter" data-status="confirming">
+                    拍摄确认
+                </button>
+                <button class="whitespace-nowrap px-4 py-2 bg-gray-light text-gray-medium rounded-full text-sm font-medium touch-friendly order-filter" data-status="editing">
+                    AI剪辑中
+                </button>
+                <button class="whitespace-nowrap px-4 py-2 bg-gray-light text-gray-medium rounded-full text-sm font-medium touch-friendly order-filter" data-status="completed">
+                    已完成
+                </button>
+                <button class="whitespace-nowrap px-4 py-2 bg-gray-light text-gray-medium rounded-full text-sm font-medium touch-friendly order-filter" data-status="failed">
+                    拍摄失败
+                </button>
+            </div>
+        </section>
+
+        <!-- 订单列表 -->
+        <section class="px-4">
+            <div class="space-y-4" id="ordersList">
+                <!-- 待拍摄订单 -->
+                <div class="miniprogram-card bg-white p-4 touch-friendly order-item" data-status="pending">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex items-center">
+                            <span class="bg-status-pending/20 text-status-pending text-xs px-2 py-1 rounded-full">待拍摄</span>
+                            <span class="ml-2 text-sm text-gray-medium">订单号：ORD20230615001</span>
+                        </div>
+                        <button class="text-primary text-sm touch-friendly">
+                            <i class="fa fa-phone mr-1"></i>联系用户
+                        </button>
+                    </div>
+                    <div class="space-y-2 text-sm mb-3">
+                        <div class="flex justify-between">
+                            <span class="text-gray-medium">拍摄地点</span>
+                            <span class="font-medium">福州鼓山-涌泉寺</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-medium">用户信息</span>
+                            <span class="font-medium">张先生 (138****5678)</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-medium">样片数量</span>
+                            <span class="font-medium">3个</span>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-lg font-bold text-primary">¥198</span>
+                        <button class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium touch-friendly" onclick="startOrder('ORD20230615001')">
+                            一键启动
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 拍摄中订单 -->
+                <div class="miniprogram-card bg-white p-4 touch-friendly order-item" data-status="shooting">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex items-center">
+                            <span class="bg-status-processing/20 text-status-processing text-xs px-2 py-1 rounded-full">拍摄中</span>
+                            <span class="ml-2 text-sm text-gray-medium">订单号：ORD20230615002</span>
+                        </div>
+                        <button class="text-primary text-sm touch-friendly">
+                            <i class="fa fa-phone mr-1"></i>联系用户
+                        </button>
+                    </div>
+                    <div class="space-y-2 text-sm mb-3">
+                        <div class="flex justify-between">
+                            <span class="text-gray-medium">拍摄地点</span>
+                            <span class="font-medium">福州鼓山-摩崖石刻</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-medium">用户信息</span>
+                            <span class="font-medium">李女士 (139****4321)</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-medium">当前进度</span>
+                            <span class="font-medium">2/5个样片</span>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <div class="text-center">
+                            <div class="text-sm text-gray-medium mb-1">拍摄进度</div>
+                            <div class="relative w-16 h-16">
+                                <svg class="w-full h-full" viewBox="0 0 36 36">
+                                    <circle cx="18" cy="18" r="16" fill="none" stroke="#E2E8F0" stroke-width="2"/>
+                                    <circle cx="18" cy="18" r="16" fill="none" stroke="#3B82F6" stroke-width="2" class="progress-ring-circle" stroke-dasharray="100" stroke-dashoffset="60"/>
+                                </svg>
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <span class="text-lg font-bold">40%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-medium touch-friendly" onclick="stopOrder('ORD20230615002')">
+                            紧急停止
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 已完成订单 -->
+                <div class="miniprogram-card bg-white p-4 touch-friendly order-item" data-status="completed">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex items-center">
+                            <span class="bg-status-completed/20 text-status-completed text-xs px-2 py-1 rounded-full">已完成</span>
+                            <span class="ml-2 text-sm text-gray-medium">订单号：ORD20230615003</span>
+                        </div>
+                        <button class="text-primary text-sm touch-friendly">
+                            <i class="fa fa-download mr-1"></i>下载成片
+                        </button>
+                    </div>
+                    <div class="space-y-2 text-sm mb-3">
+                        <div class="flex justify-between">
+                            <span class="text-gray-medium">拍摄地点</span>
+                            <span class="font-medium">福州鼓山-登山古径</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-medium">用户信息</span>
+                            <span class="font-medium">王先生 (135****9876)</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-medium">完成时间</span>
+                            <span class="font-medium">今天 10:30</span>
+                        </div>
+                    </div>
+                    <div class="flex justify-end">
+                        <button class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium touch-friendly" onclick="viewOrderDetails('ORD20230615003')">
+                            查看详情
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 拍摄失败订单 -->
+                <div class="miniprogram-card bg-white p-4 touch-friendly order-item" data-status="failed">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex items-center">
+                            <span class="bg-status-failed/20 text-status-failed text-xs px-2 py-1 rounded-full">拍摄失败</span>
+                            <span class="ml-2 text-sm text-gray-medium">订单号：ORD20230615004</span>
+                        </div>
+                        <button class="text-primary text-sm touch-friendly">
+                            <i class="fa fa-phone mr-1"></i>联系用户
+                        </button>
+                    </div>
+                    <div class="space-y-2 text-sm mb-3">
+                        <div class="flex justify-between">
+                            <span class="text-gray-medium">拍摄地点</span>
+                            <span class="font-medium">福州鼓山-屴崱峰</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-medium">用户信息</span>
+                            <span class="font-medium">陈女士 (136****2345)</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-medium">失败原因</span>
+                            <span class="font-medium text-status-failed">信号中断</span>
+                        </div>
+                    </div>
+                    <div class="flex justify-end">
+                        <button class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium touch-friendly" onclick="retryOrder('ORD20230615004')">
+                            一键重拍
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 订单详情弹窗 -->
+        <div id="orderDetailsModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 hidden">
+            <div class="bg-white rounded-lg w-full max-w-md mx-4 max-h-[80vh] overflow-y-auto">
+                <div class="p-5 border-b border-gray-light flex justify-between items-center">
+                    <h3 class="font-bold text-lg text-dark">订单详情</h3>
+                    <button onclick="closeOrderDetails()" class="text-gray-medium">
+                        <i class="fa fa-times text-xl"></i>
+                    </button>
+                </div>
+                <div class="p-5 space-y-4" id="orderDetailsContent">
+                    <!-- 订单详情内容会通过JavaScript动态填充 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 样片预览弹窗 -->
+        <div id="samplePreviewModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 hidden">
+            <div class="bg-white rounded-lg w-full max-w-md mx-4 max-h-[80vh] overflow-y-auto">
+                <div class="p-5 border-b border-gray-light flex justify-between items-center">
+                    <h3 class="font-bold text-lg text-dark">样片预览</h3>
+                    <button onclick="closeSamplePreview()" class="text-gray-medium">
+                        <i class="fa fa-times text-xl"></i>
+                    </button>
+                </div>
+                <div class="p-5 space-y-4">
+                    <!-- 景点选择 -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-dark mb-2">选择景点</label>
+                        <select class="w-full p-3 border border-gray-light rounded-lg focus:outline-none" id="scenicSpotSelect">
+                            <option value="all">全部景点</option>
+                            <option value="yongquan">涌泉寺</option>
+                            <option value="moya">摩崖石刻</option>
+                            <option value="dengshan">登山古径</option>
+                            <option value="lize">屴崱峰</option>
+                            <option value="huilong">回龙阁</option>
+                            <option value="lingyuan">灵源洞</option>
+                            <option value="luohan">罗汉台</option>
+                            <option value="xianglu">香炉峰</option>
+                            <option value="baiyun">白云洞</option>
+                        </select>
+                    </div>
+                    
+                    <!-- 样片列表 -->
+                    <div class="space-y-3" id="sampleList">
+                        <div class="border border-gray-light rounded-lg overflow-hidden touch-friendly">
+                            <div class="relative">
+                                <img src="https://picsum.photos/id/1015/800/450" alt="涌泉寺全景" class="w-full h-40 object-cover">
+                                <div class="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded-full">
+                                    涌泉寺
+                                </div>
+                                <div class="absolute bottom-2 right-2">
+                                    <button class="bg-primary text-white p-2 rounded-full touch-friendly">
+                                        <i class="fa fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="p-3">
+                                <h4 class="font-medium text-dark">全景航拍</h4>
+                                <p class="text-gray-medium text-sm mt-1">15秒 | ¥68</p>
+                            </div>
+                        </div>
+                        
+                        <div class="border border-gray-light rounded-lg overflow-hidden touch-friendly">
+                            <div class="relative">
+                                <img src="https://picsum.photos/id/1018/800/450" alt="摩崖石刻特写" class="w-full h-40 object-cover">
+                                <div class="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded-full">
+                                    摩崖石刻
+                                </div>
+                                <div class="absolute bottom-2 right-2">
+                                    <button class="bg-primary text-white p-2 rounded-full touch-friendly">
+                                        <i class="fa fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="p-3">
+                                <h4 class="font-medium text-dark">特写镜头</h4>
+                                <p class="text-gray-medium text-sm mt-1">10秒 | ¥58</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4 border-t border-gray-light flex space-x-3">
+                    <button class="flex-1 bg-gray-light text-gray-medium py-3 rounded-lg font-medium touch-friendly">
+                        取消
+                    </button>
+                    <button class="flex-1 bg-primary text-white py-3 rounded-lg font-medium touch-friendly" onclick="generateOrder()">
+                        生成订单
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部导航栏 -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-light z-50 safe-area-bottom">
+        <div class="flex justify-around items-center h-16">
+            <div class="tab-item flex flex-col items-center justify-center text-primary touch-friendly active" data-page="order">
+                <i class="fa fa-list-alt text-lg mb-1"></i>
+                <span class="text-xs">订单</span>
+            </div>
+            <div class="tab-item flex flex-col items-center justify-center text-gray-medium touch-friendly" data-page="device" onclick="location.href='device.html'">
+                <i class="fa fa-cube text-lg mb-1"></i>
+                <span class="text-xs">设备</span>
+            </div>
+            <div class="tab-item flex flex-col items-center justify-center text-gray-medium touch-friendly" data-page="report" onclick="location.href='report.html'">
+                <i class="fa fa-bar-chart text-lg mb-1"></i>
+                <span class="text-xs">报表</span>
+            </div>
+            <div class="tab-item flex flex-col items-center justify-center text-gray-medium touch-friendly" data-page="profile" onclick="location.href='profile.html'">
+                <i class="fa fa-user text-lg mb-1"></i>
+                <span class="text-xs">我的</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- JavaScript交互代码 -->
+    <script src="app.js"></script>
+    <script>
+        // 订单状态筛选
+        const orderFilters = document.querySelectorAll('.order-filter');
+        const orderItems = document.querySelectorAll('.order-item');
+
+        orderFilters.forEach(filter => {
+            filter.addEventListener('click', () => {
+                // 更新筛选按钮样式
+                orderFilters.forEach(f => {
+                    f.classList.remove('bg-primary', 'text-white', 'active');
+                    f.classList.add('bg-gray-light', 'text-gray-medium');
+                });
+                filter.classList.remove('bg-gray-light', 'text-gray-medium');
+                filter.classList.add('bg-primary', 'text-white', 'active');
+
+                // 筛选订单
+                const status = filter.getAttribute('data-status');
+                orderItems.forEach(item => {
+                    if (status === 'all' || item.getAttribute('data-status') === status) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+        });
+
+        // 扫码执行订单
+        function scanQRCode() {
+            showToast('扫码功能已触发');
+            // 实际应用中应调用微信小程序的扫码API
+            setTimeout(() => {
+                showToast('扫码成功，正在加载订单信息');
+                // 模拟加载订单信息后显示订单详情
+            }, 1500);
+        }
+
+        // 样片预览
+        function previewSamples() {
+            const samplePreviewModal = document.getElementById('samplePreviewModal');
+            samplePreviewModal.classList.remove('hidden');
+        }
+
+        // 关闭样片预览
+        function closeSamplePreview() {
+            const samplePreviewModal = document.getElementById('samplePreviewModal');
+            samplePreviewModal.classList.add('hidden');
+        }
+
+        // 生成订单
+        function generateOrder() {
+            showToast('订单生成成功');
+            setTimeout(() => {
+                const samplePreviewModal = document.getElementById('samplePreviewModal');
+                samplePreviewModal.classList.add('hidden');
+                // 显示付款二维码
+                showPaymentQRCode();
+            }, 1500);
+        }
+
+        // 显示付款二维码
+        function showPaymentQRCode() {
+            const qrCodeModal = document.createElement('div');
+            qrCodeModal.id = 'paymentQRCodeModal';
+            qrCodeModal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black/50';
+            qrCodeModal.innerHTML = `
+                <div class="bg-white rounded-lg w-full max-w-md mx-4 p-5 text-center">
+                    <h3 class="font-bold text-lg text-dark mb-4">付款二维码</h3>
+                    <div class="w-56 h-56 bg-gray-light rounded-lg mx-auto mb-4 flex items-center justify-center">
+                        <i class="fa fa-qrcode text-4xl text-gray-medium"></i>
+                    </div>
+                    <p class="text-gray-medium text-sm mb-4">请让用户扫描二维码完成付款</p>
+                    <button class="w-full bg-primary text-white py-3 rounded-lg font-medium touch-friendly" onclick="closePaymentQRCode()">
+                        完成
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(qrCodeModal);
+        }
+
+        // 关闭付款二维码
+        function closePaymentQRCode() {
+            const qrCodeModal = document.getElementById('paymentQRCodeModal');
+            if (qrCodeModal) {
+                qrCodeModal.remove();
+            }
+        }
+
+        // 开始订单
+        function startOrder(orderId) {
+            showToast('订单开始执行');
+            // 实际应用中应调用开始订单API
+            setTimeout(() => {
+                window.location.href = 'order-tracking.html?orderId=' + orderId;
+            }, 1000);
+        }
+
+        // 停止订单
+        function stopOrder(orderId) {
+            if (confirm('确定要紧急停止此订单吗？')) {
+                showToast('订单已停止');
+                // 实际应用中应调用停止订单API
+            }
+        }
+
+        // 重试订单
+        function retryOrder(orderId) {
+            showToast('正在准备重拍');
+            // 实际应用中应调用重试订单API
+            setTimeout(() => {
+                window.location.href = 'order-tracking.html?orderId=' + orderId + '&retry=true';
+            }, 1000);
+        }
+
+        // 查看订单详情
+        function viewOrderDetails(orderId) {
+            const orderDetailsModal = document.getElementById('orderDetailsModal');
+            const orderDetailsContent = document.getElementById('orderDetailsContent');
+            
+            // 模拟加载订单详情
+            orderDetailsContent.innerHTML = `
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-gray-medium">订单状态</span>
+                        <span class="font-medium text-status-completed">已完成</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-medium">订单金额</span>
+                        <span class="font-bold text-primary">¥198</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-medium">用户信息</span>
+                        <span class="font-medium">王先生 (135****9876)</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-medium">拍摄地点</span>
+                        <span class="font-medium">福州鼓山-登山古径</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-medium">下单时间</span>
+                        <span class="font-medium">今天 09:15</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-medium">完成时间</span>
+                        <span class="font-medium">今天 10:30</span>
+                    </div>
+                    <div class="border-t border-gray-light pt-3">
+                        <h4 class="font-medium text-dark mb-2">样片信息</h4>
+                        <div class="space-y-3">
+                            <div class="flex">
+                                <img src="https://picsum.photos/id/1039/100/100" alt="登山古径航拍" class="w-20 h-20 object-cover rounded-lg">
+                                <div class="ml-3 flex-1">
+                                    <h5 class="font-medium">登山古径全景</h5>
+                                    <p class="text-gray-medium text-xs">20秒 | ¥68</p>
+                                </div>
+                            </div>
+                            <div class="flex">
+                                <img src="https://picsum.photos/id/1040/100/100" alt="登山古径特写" class="w-20 h-20 object-cover rounded-lg">
+                                <div class="ml-3 flex-1">
+                                    <h5 class="font-medium">山间云雾</h5>
+                                    <p class="text-gray-medium text-xs">15秒 | ¥58</p>
+                                </div>
+                            </div>
+                            <div class="flex">
+                                <img src="https://picsum.photos/id/1041/100/100" alt="登山古径延时" class="w-20 h-20 object-cover rounded-lg">
+                                <div class="ml-3 flex-1">
+                                    <h5 class="font-medium">日出延时</h5>
+                                    <p class="text-gray-medium text-xs">30秒 | ¥72</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            orderDetailsModal.classList.remove('hidden');
+        }
+
+        // 关闭订单详情
+        function closeOrderDetails() {
+            const orderDetailsModal = document.getElementById('orderDetailsModal');
+            orderDetailsModal.classList.add('hidden');
+        }
+
+        // 显示通知
+        function showNotifications() {
+            showToast('通知功能开发中');
+        }
+    </script>
+</body>
+</html>
