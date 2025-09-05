@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>设备管理 - 无人机自助打卡</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#1E40AF',
+                        accent: '#06B6D4',
+                        dark: '#1E293B',
+                        light: '#F8FAFC',
+                        'gray-medium': '#64748B',
+                        'gray-light': '#E2E8F0',
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-light">
+    <!-- 页面容器 -->
+    <div class="min-h-screen pb-16">
+        <!-- 顶部标题区域 -->
+        <div class="bg-gradient-to-r from-primary to-accent p-4 text-white">
+            <div class="container mx-auto">
+                <h1 class="text-xl font-bold">设备管理</h1>
+                <p class="text-sm opacity-90">监控和管理无人机设备</p>
+            </div>
+        </div>
+
+        <!-- 主要内容区域 -->
+        <div class="container mx-auto px-4 py-4">
+            <!-- 设备状态概览 -->
+            <div class="card-tech bg-white p-4 rounded-lg shadow-sm mb-4">
+                <h2 class="text-lg font-semibold mb-3">设备状态概览</h2>
+                <div class="grid grid-cols-3 gap-3">
+                    <div class="tech-border p-3 rounded-lg text-center">
+                        <div class="text-2xl font-bold text-success">3</div>
+                        <div class="text-xs text-gray-medium mt-1">在线设备</div>
+                    </div>
+                    <div class="tech-border p-3 rounded-lg text-center">
+                        <div class="text-2xl font-bold text-warning">1</div>
+                        <div class="text-xs text-gray-medium mt-1">低电量</div>
+                    </div>
+                    <div class="tech-border p-3 rounded-lg text-center">
+                        <div class="text-2xl font-bold text-gray-medium">0</div>
+                        <div class="text-xs text-gray-medium mt-1">离线设备</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 设备列表 -->
+            <div class="bg-white rounded-lg shadow-sm mb-4">
+                <div class="p-4 border-b">
+                    <h3 class="text-lg font-semibold">我的设备</h3>
+                    <p class="text-sm text-gray-medium mt-1">管理您负责的无人机设备</p>
+                </div>
+
+                <!-- 设备列表项 -->
+                <div class="device-list">
+                    <!-- 设备项 -->
+                    <div class="device-item p-4 border-b">
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mr-3">
+                                    <i class="fa fa-paper-plane text-primary text-xl"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium">大疆御3pro</div>
+                                    <div class="text-xs text-gray-medium mt-1">设备编号: DJI-M3P-001</div>
+                                </div>
+                            </div>
+                            <div>
+                                <span class="drone-status online">在线</span>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>电池电量</span>
+                                <span class="font-medium">85%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-bar-fill bg-success" style="width: 85%"></div>
+                            </div>
+                            <div class="text-xs text-gray-medium mt-1">预计剩余飞行时间: 25分钟</div>
+                        </div>
+                        <div class="mt-3 grid grid-cols-2 gap-2">
+                            <button class="bg-white border border-gray-light text-dark py-2 rounded text-sm touch-friendly">
+                                <i class="fa fa-refresh mr-1"></i> 刷新状态
+                            </button>
+                            <button class="bg-white border border-primary text-primary py-2 rounded text-sm touch-friendly" onclick="showDeviceDetail('DJI-M3P-001')">
+                                <i class="fa fa-info-circle mr-1"></i> 详细信息
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 设备项 -->
+                    <div class="device-item p-4 border-b">
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mr-3">
+                                    <i class="fa fa-paper-plane text-primary text-xl"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium">大疆御3pro</div>
+                                    <div class="text-xs text-gray-medium mt-1">设备编号: DJI-M3P-002</div>
+                                </div>
+                            </div>
+                            <div>
+                                <span class="drone-status low-battery">低电量</span>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>电池电量</span>
+                                <span class="font-medium text-warning">15%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-bar-fill bg-warning" style="width: 15%"></div>
+                            </div>
+                            <div class="text-xs text-warning mt-1">
+                                <i class="fa fa-exclamation-triangle mr-1"></i> 电量低，请及时更换电池
+                            </div>
+                        </div>
+                        <div class="mt-3 grid grid-cols-2 gap-2">
+                            <button class="bg-white border border-gray-light text-dark py-2 rounded text-sm touch-friendly">
+                                <i class="fa fa-refresh mr-1"></i> 刷新状态
+                            </button>
+                            <button class="bg-white border border-primary text-primary py-2 rounded text-sm touch-friendly" onclick="showDeviceDetail('DJI-M3P-002')">
+                                <i class="fa fa-info-circle mr-1"></i> 详细信息
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 设备项 -->
+                    <div class="device-item p-4 border-b">
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mr-3">
+                                    <i class="fa fa-paper-plane text-primary text-xl"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium">大疆御3pro</div>
+                                    <div class="text-xs text-gray-medium mt-1">设备编号: DJI-M3P-003</div>
+                                </div>
+                            </div>
+                            <div>
+                                <span class="drone-status online">在线</span>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>电池电量</span>
+                                <span class="font-medium">72%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-bar-fill bg-success" style="width: 72%"></div>
+                            </div>
+                            <div class="text-xs text-gray-medium mt-1">预计剩余飞行时间: 20分钟</div>
+                        </div>
+                        <div class="mt-3 grid grid-cols-2 gap-2">
+                            <button class="bg-white border border-gray-light text-dark py-2 rounded text-sm touch-friendly">
+                                <i class="fa fa-refresh mr-1"></i> 刷新状态
+                            </button>
+                            <button class="bg-white border border-primary text-primary py-2 rounded text-sm touch-friendly" onclick="showDeviceDetail('DJI-M3P-003')">
+                                <i class="fa fa-info-circle mr-1"></i> 详细信息
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 设备项 -->
+                    <div class="device-item p-4">
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mr-3">
+                                    <i class="fa fa-paper-plane text-primary text-xl"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium">大疆御3pro</div>
+                                    <div class="text-xs text-gray-medium mt-1">设备编号: DJI-M3P-004</div>
+                                </div>
+                            </div>
+                            <div>
+                                <span class="drone-status online">在线</span>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>电池电量</span>
+                                <span class="font-medium">65%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-bar-fill bg-success" style="width: 65%"></div>
+                            </div>
+                            <div class="text-xs text-gray-medium mt-1">预计剩余飞行时间: 18分钟</div>
+                        </div>
+                        <div class="mt-3 grid grid-cols-2 gap-2">
+                            <button class="bg-white border border-gray-light text-dark py-2 rounded text-sm touch-friendly">
+                                <i class="fa fa-refresh mr-1"></i> 刷新状态
+                            </button>
+                            <button class="bg-white border border-primary text-primary py-2 rounded text-sm touch-friendly" onclick="showDeviceDetail('DJI-M3P-004')">
+                                <i class="fa fa-info-circle mr-1"></i> 详细信息
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 电池管理 -->
+            <div class="bg-white rounded-lg shadow-sm mb-4">
+                <div class="p-4 border-b">
+                    <h3 class="text-lg font-semibold">电池管理</h3>
+                    <p class="text-sm text-gray-medium mt-1">监控和管理无人机电池</p>
+                </div>
+
+                <div class="p-4">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="tech-border p-3 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="text-sm font-medium">备用电池</div>
+                                    <div class="text-xs text-gray-medium mt-1">可用数量</div>
+                                </div>
+                                <div class="text-2xl font-bold text-primary">6</div>
+                            </div>
+                        </div>
+                        <div class="tech-border p-3 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="text-sm font-medium">充电中</div>
+                                    <div class="text-xs text-gray-medium mt-1">电池数量</div>
+                                </div>
+                                <div class="text-2xl font-bold text-accent">2</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <div class="text-sm font-medium mb-2">电池更换提醒</div>
+                        <div class="tech-border p-3 rounded-lg">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-warning/20 rounded-full flex items-center justify-center mr-3">
+                                    <i class="fa fa-battery-quarter text-warning"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="text-sm">设备 DJI-M3P-002 需要更换电池</div>
+                                    <div class="text-xs text-gray-medium mt-1">当前电量: 15%</div>
+                                </div>
+                                <button class="bg-white border border-warning text-warning px-3 py-1 rounded text-xs">
+                                    已处理
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 一键报修 -->
+            <div class="mt-4">
+                <button id="repairBtn" class="btn btn-tech w-full">
+                    <i class="fa fa-wrench mr-2"></i> 一键报修
+                </button>
+            </div>
+        </div>
+
+        <!-- 设备详情模态框 -->
+        <div id="deviceDetailModal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center">
+            <div class="bg-white w-full max-w-md rounded-lg m-4">
+                <div class="p-4 border-b flex justify-between items-center">
+                    <h3 class="font-semibold">设备详情</h3>
+                    <button id="closeDeviceDetailBtn" class="text-gray-medium">
+                        <i class="fa fa-times"></i>
+                    </button>
+                </div>
+                <div class="p-4">
+                    <div class="flex justify-center mb-4">
+                        <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+                            <i class="fa fa-paper-plane text-primary text-2xl"></i>
+                        </div>
+                    </div>
+                    <div class="text-center mb-4">
+                        <h4 class="font-medium" id="deviceDetailName">大疆御3pro</h4>
+                        <div class="text-sm text-gray-medium mt-1" id="deviceDetailId">设备编号: DJI-M3P-001</div>
+                        <div class="mt-2">
+                            <span class="drone-status online" id="deviceDetailStatus">在线</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div>
+                            <div class="text-sm font-medium mb-1">电池状态</div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>电量</span>
+                                <span class="font-medium" id="deviceDetailBattery">85%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-bar-fill bg-success" id="deviceDetailBatteryBar" style="width: 85%"></div>
+                            </div>
+                            <div class="text-xs text-gray-medium mt-1" id="deviceDetailFlightTime">预计剩余飞行时间: 25分钟</div>
+                        </div>
+
+                        <div>
+                            <div class="text-sm font-medium mb-1">设备信息</div>
+                            <div class="tech-border p-3 rounded-lg">
+                                <div class="grid grid-cols-2 gap-2 text-sm">
+                                    <div class="flex flex-col">
+                                        <span class="text-gray-medium">型号</span>
+                                        <span>大疆御3pro</span>
+                                    </div>
+                                    <div class="flex flex-col">
+                                        <span class="text-gray-medium">固件版本</span>
+                                        <span>v2.0.6</span>
+                                    </div>
+                                    <div class="flex flex-col mt-2">
+                                        <span class="text-gray-medium">激活日期</span>
+                                        <span>2023-05-15</span>
+                                    </div>
+                                    <div class="flex flex-col mt-2">
+                                        <span class="text-gray-medium">累计飞行</span>
+                                        <span>126小时</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="text-sm font-medium mb-1">服务景点</div>
+                            <div class="tech-border p-3 rounded-lg">
+                                <div class="text-sm">福州鼓山景区 - 涌泉寺</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4 border-t flex gap-2">
+                    <button class="flex-1 bg-white border border-gray-light text-dark py-2 rounded text-sm touch-friendly">
+                        <i class="fa fa-refresh mr-1"></i> 刷新状态
+                    </button>
+                    <button class="flex-1 bg-white border border-danger text-danger py-2 rounded text-sm touch-friendly" id="reportIssueBtn">
+                        <i class="fa fa-exclamation-circle mr-1"></i> 报告问题
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 报修模态框 -->
+        <div id="repairModal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center">
+            <div class="bg-white w-full max-w-md rounded-lg m-4">
+                <div class="p-4 border-b flex justify-between items-center">
+                    <h3 class="font-semibold">设备报修</h3>
+                    <button id="closeRepairBtn" class="text-gray-medium">
+                        <i class="fa fa-times"></i>
+                    </button>
+                </div>
+                <div class="p-4">
+                    <div class="form-group">
+                        <label class="form-label">选择设备</label>
+                        <select class="form-control">
+                            <option>请选择需要报修的设备</option>
+                            <option>大疆御3pro - DJI-M3P-001</option>
+                            <option>大疆御3pro - DJI-M3P-002</option>
+                            <option>大疆御3pro - DJI-M3P-003</option>
+                            <option>大疆御3pro - DJI-M3P-004</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">问题类型</label>
+                        <select class="form-control">
+                            <option>请选择问题类型</option>
+                            <option>电池问题</option>
+                            <option>飞行控制问题</option>
+                            <option>摄像头问题</option>
+                            <option>传输信号问题</option>
+                            <option>其他问题</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">问题描述</label>
+                        <textarea class="form-control" rows="4" placeholder="请详细描述设备问题..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">联系方式</label>
+                        <input type="tel" class="form-control" placeholder="请输入您的联系电话">
+                    </div>
+                </div>
+                <div class="p-4 border-t">
+                    <button id="submitRepairBtn" class="btn btn-tech w-full">
+                        <i class="fa fa-paper-plane mr-2"></i> 提交报修
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部导航栏 -->
+        <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-light z-40 safe-area-bottom">
+            <div class="flex h-14">
+                <a href="order.html" class="nav-item" data-page="order">
+                    <i class="fa fa-list-alt text-lg mb-1"></i>
+                    <span class="text-xs">订单</span>
+                </a>
+                <a href="device.html" class="nav-item active" data-page="device">
+                    <i class="fa fa-paper-plane text-lg mb-1"></i>
+                    <span class="text-xs">设备</span>
+                </a>
+                <a href="report.html" class="nav-item" data-page="report">
+                    <i class="fa fa-bar-chart text-lg mb-1"></i>
+                    <span class="text-xs">报表</span>
+                </a>
+                <a href="profile.html" class="nav-item" data-page="profile">
+                    <i class="fa fa-user text-lg mb-1"></i>
+                    <span class="text-xs">我的</span>
+                </a>
+            </div>
+        </nav>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 设备详情模态框
+            const deviceDetailModal = document.getElementById('deviceDetailModal');
+            const closeDeviceDetailBtn = document.getElementById('closeDeviceDetailBtn');
+            
+            closeDeviceDetailBtn.addEventListener('click', function() {
+                deviceDetailModal.classList.add('hidden');
+                document.body.style.overflow = '';
+            });
+            
+            // 报修模态框
+            const repairModal = document.getElementById('repairModal');
+            const repairBtn = document.getElementById('repairBtn');
+            const closeRepairBtn = document.getElementById('closeRepairBtn');
+            const reportIssueBtn = document.getElementById('reportIssueBtn');
+            const submitRepairBtn = document.getElementById('submitRepairBtn');
+            
+            repairBtn.addEventListener('click', function() {
+                repairModal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            });
+            
+            reportIssueBtn.addEventListener('click', function() {
+                deviceDetailModal.classList.add('hidden');
+                repairModal.classList.remove('hidden');
+            });
+            
+            closeRepairBtn.addEventListener('click', function() {
+                repairModal.classList.add('hidden');
+                document.body.style.overflow = '';
+            });
+            
+            submitRepairBtn.addEventListener('click', function() {
+                // 模拟提交报修
+                showLoading();
+                
+                setTimeout(() => {
+                    hideLoading();
+                    repairModal.classList.add('hidden');
+                    document.body.style.overflow = '';
+                    showToast('报修申请已提交，工作人员将尽快联系您');
+                }, 1000);
+            });
+            
+            // 定时刷新设备状态
+            setInterval(() => {
+                updateDeviceStatus();
+            }, 30000); // 每30秒更新一次
+        });
+        
+        // 显示设备详情
+        function showDeviceDetail(deviceId) {
+            const deviceDetailModal = document.getElementById('deviceDetailModal');
+            const deviceDetailName = document.getElementById('deviceDetailName');
+            const deviceDetailId = document.getElementById('deviceDetailId');
+            const deviceDetailStatus = document.getElementById('deviceDetailStatus');
+            const deviceDetailBattery = document.getElementById('deviceDetailBattery');
+            const deviceDetailBatteryBar = document.getElementById('deviceDetailBatteryBar');
+            const deviceDetailFlightTime = document.getElementById('deviceDetailFlightTime');
+            
+            // 根据设备ID获取设备信息
+            // 这里是模拟数据，实际应该从API获取
+            let batteryLevel = 85;
+            let status = 'online';
+            
+            if (deviceId === 'DJI-M3P-002') {
+                batteryLevel = 15;
+                status = 'low-battery';
+            }
+            
+            // 更新设备详情
+            deviceDetailName.textContent = '大疆御3pro';
+            deviceDetailId.textContent = `设备编号: ${deviceId}`;
+            
+            // 更新状态
+            deviceDetailStatus.className = `drone-status ${status}`;
+            deviceDetailStatus.textContent = status === 'online' ? '在线' : '低电量';
+            
+            // 更新电池
+            deviceDetailBattery.textContent = `${batteryLevel}%`;
+            deviceDetailBatteryBar.style.width = `${batteryLevel}%`;
+            
+            if (batteryLevel > 50) {
+                deviceDetailBatteryBar.className = 'progress-bar-fill bg-success';
+            } else if (batteryLevel > 20) {
+                deviceDetailBatteryBar.className = 'progress-bar-fill bg-warning';
+            } else {
+                deviceDetailBatteryBar.className = 'progress-bar-fill bg-danger';
+            }
+            
+            // 更新飞行时间
+            const flightTime = Math.floor(batteryLevel / 3);
+            deviceDetailFlightTime.textContent = `预计剩余飞行时间: ${flightTime}分钟`;
+            
+            // 显示模态框
+            deviceDetailModal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        // 更新设备状态
+        function updateDeviceStatus() {
+            console.log('更新设备状态...');
+            // 实际应该从API获取最新状态
+        }
+    </script>
+</body>
+</html> 
