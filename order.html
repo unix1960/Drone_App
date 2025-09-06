@@ -61,6 +61,18 @@
                 min-height: calc(100vh - 4rem); /* 4rem is the height of the bottom nav */
                 padding-bottom: calc(4rem + 1rem); /* nav height + extra padding */
             }
+            .stat-card {
+                transition: all 0.3s ease;
+            }
+            .stat-card:active {
+                transform: scale(0.98);
+            }
+            .stat-icon-button {
+                transition: transform 0.2s ease;
+            }
+            .stat-icon-button:active {
+                transform: scale(0.9);
+            }
         }
     </style>
 </head>
@@ -84,18 +96,34 @@
             <div class="miniprogram-card bg-gradient-to-r from-primary to-blue-secondary p-5 text-white">
                 <h2 class="font-bold text-lg mb-4">今日概览</h2>
                 <div class="grid grid-cols-2 gap-4">
-                    <div class="bg-white/20 backdrop-blur-sm rounded-lg p-4">
+                    <div class="bg-white/20 backdrop-blur-sm rounded-lg p-4 stat-card relative">
+                        <div class="absolute top-4 right-4 stat-icon-button">
+                            <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                                <i class="fa fa-list-ul text-white"></i>
+                            </div>
+                        </div>
                         <p class="text-white/80 text-sm mb-1">今日订单</p>
                         <div class="flex items-baseline">
                             <span class="text-3xl font-bold mr-2">12</span>
                             <span class="text-xs text-white/80">单</span>
                         </div>
+                        <div class="text-xs text-white/90 mt-1 flex items-center">
+                            <i class="fa fa-arrow-up text-green-300 mr-1"></i>较昨日 +2单 (+20%)
+                        </div>
                     </div>
-                    <div class="bg-white/20 backdrop-blur-sm rounded-lg p-4">
+                    <div class="bg-white/20 backdrop-blur-sm rounded-lg p-4 stat-card relative">
+                        <div class="absolute top-4 right-4 stat-icon-button">
+                            <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                                <i class="fa fa-area-chart text-white"></i>
+                            </div>
+                        </div>
                         <p class="text-white/80 text-sm mb-1">今日收益</p>
                         <div class="flex items-baseline">
                             <span class="text-3xl font-bold mr-2">¥1,356</span>
                             <span class="text-xs text-white/80">元</span>
+                        </div>
+                        <div class="text-xs text-white/90 mt-1 flex items-center">
+                            <i class="fa fa-arrow-up text-green-300 mr-1"></i>较昨日 +¥280 (+26%)
                         </div>
                     </div>
                 </div>
@@ -383,7 +411,7 @@
                         <div class="border border-gray-light rounded-lg p-4">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <h4 class="font-medium text-dark">专业调色</h4>
+                                    <h4 class="font-medium text-dark">专业精剪</h4>
                                     <p class="text-gray-medium text-sm mt-1">专业调色师精细调色</p>
                                 </div>
                                 <div class="flex items-center">
@@ -396,8 +424,8 @@
                         <div class="border border-gray-light rounded-lg p-4">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <h4 class="font-medium text-dark">配乐剪辑</h4>
-                                    <p class="text-gray-medium text-sm mt-1">添加背景音乐和转场效果</p>
+                                    <h4 class="font-medium text-dark">原片优盘</h4>
+                                    <p class="text-gray-medium text-sm mt-1">提供原片U盘服务</p>
                                 </div>
                                 <div class="flex items-center">
                                     <span class="text-primary font-bold mr-3">¥120</span>
@@ -406,24 +434,12 @@
                             </div>
                         </div>
                         
-                        <div class="border border-gray-light rounded-lg p-4">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <h4 class="font-medium text-dark">延时摄影</h4>
-                                    <p class="text-gray-medium text-sm mt-1">制作延时摄影特效</p>
-                                </div>
-                                <div class="flex items-center">
-                                    <span class="text-primary font-bold mr-3">¥150</span>
-                                    <input type="checkbox" class="value-added-service w-5 h-5" value="150" data-service="time-lapse">
-                                </div>
-                            </div>
-                        </div>
                         
                         <div class="border border-gray-light rounded-lg p-4">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <h4 class="font-medium text-dark">航拍全景</h4>
-                                    <p class="text-gray-medium text-sm mt-1">制作360°全景航拍视频</p>
+                                    <h4 class="font-medium text-dark">航拍周边</h4>
+                                    <p class="text-gray-medium text-sm mt-1">提供航拍周边产品</p>
                                 </div>
                                 <div class="flex items-center">
                                     <span class="text-primary font-bold mr-3">¥200</span>
@@ -897,8 +913,8 @@
                         </div>
                         <div class="bg-gray-light rounded-full h-2 w-full">
                             <div class="bg-primary h-2 rounded-full" style="width: 40%"></div>
-                        </div>
-                    </div>
+                                </div>
+                            </div>
                     <div class="border-t border-gray-light pt-3 mt-3">
                         <h4 class="font-medium text-dark mb-2">当前样片</h4>
                         <div class="flex">

@@ -411,7 +411,7 @@
                 </button>
                 
                 <!-- 返回起点按钮 -->
-                <button class="bg-white text-gray-800 p-4 rounded-lg shadow-sm flex flex-col items-center justify-center touch-friendly btn-hover">
+                <button id="returnStartBtn" class="bg-white text-gray-800 p-4 rounded-lg shadow-sm flex flex-col items-center justify-center touch-friendly btn-hover">
                     <i class="fa fa-home text-2xl mb-2 text-blue-500"></i>
                     <span>返回起点</span>
                 </button>
@@ -419,20 +419,20 @@
             
             <div class="grid grid-cols-2 gap-3 mb-3">
                 <!-- 悬停等待按钮 -->
-                <button class="bg-white text-gray-800 p-4 rounded-lg shadow-sm flex flex-col items-center justify-center touch-friendly btn-hover">
+                <button id="hoverWaitBtn" class="bg-white text-gray-800 p-4 rounded-lg shadow-sm flex flex-col items-center justify-center touch-friendly btn-hover">
                     <i class="fa fa-hand-paper-o text-2xl mb-2 text-blue-500"></i>
                     <span>悬停等待</span>
                 </button>
                 
                 <!-- 下一样片按钮 -->
-                <button class="bg-blue-500 text-white p-4 rounded-lg shadow-sm flex flex-col items-center justify-center touch-friendly btn-hover">
+                <button id="nextSampleBtn" class="bg-blue-500 text-white p-4 rounded-lg shadow-sm flex flex-col items-center justify-center touch-friendly btn-hover">
                     <i class="fa fa-play text-2xl mb-2"></i>
                     <span>下一样片</span>
                 </button>
             </div>
             
             <!-- 完成拍摄按钮 - 全宽 -->
-            <button class="w-full bg-emerald-500 text-white p-5 rounded-lg shadow-sm flex items-center justify-center touch-friendly mb-3 btn-hover">
+            <button id="completeMissionBtn" class="w-full bg-emerald-500 text-white p-5 rounded-lg shadow-sm flex items-center justify-center touch-friendly mb-3 btn-hover">
                 <i class="fa fa-check text-xl mr-2"></i>
                 <span class="text-lg">完成所有拍摄任务</span>
             </button>
@@ -594,6 +594,9 @@
             
             // 初始化控制按钮
             initControlButtons();
+            
+            // 初始化所有按钮的点击声音反馈
+            initButtonSoundEffects();
             
             // 初始化景点卡片滑动
             initLocationCards();
@@ -852,6 +855,131 @@
                     hideModal(emergencyStopModal);
                 }
             });
+
+            // 返回起点按钮点击事件
+            const returnStartBtn = document.getElementById('returnStartBtn');
+            if (returnStartBtn) {
+                returnStartBtn.addEventListener('click', () => {
+                    showToast('指令已执行：返回起点');
+                });
+            }
+
+            // 悬停等待按钮点击事件
+            const hoverWaitBtn = document.getElementById('hoverWaitBtn');
+            if (hoverWaitBtn) {
+                hoverWaitBtn.addEventListener('click', () => {
+                    showToast('指令已执行：悬停等待');
+                });
+            }
+
+            // 下一样片按钮点击事件
+            const nextSampleBtn = document.getElementById('nextSampleBtn');
+            if (nextSampleBtn) {
+                nextSampleBtn.addEventListener('click', () => {
+                    showToast('指令已执行：前往下一样片拍摄点');
+                });
+            }
+
+            // 完成所有拍摄任务按钮点击事件（带确认对话框）
+            const completeMissionBtn = document.getElementById('completeMissionBtn');
+            if (completeMissionBtn) {
+                completeMissionBtn.addEventListener('click', () => {
+                    if (confirm('确定要完成所有拍摄任务并返航吗？')) {
+                        showToast('正在结束任务并返航');
+                        // 模拟任务完成后的操作
+                        setTimeout(() => {
+                            window.location.href = 'order.html';
+                        }, 3000);
+                    }
+                });
+            }
+        }
+
+        // 初始化所有按钮的点击声音反馈
+        function initButtonSoundEffects() {
+            // 创建一个音频上下文
+            let audioContext;
+            
+            // 函数：播放点击音效
+            function playClickSound() {
+                try {
+                    // 如果音频上下文不存在，创建一个
+                    if (!audioContext) {
+                        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    }
+                    
+                    // 如果音频上下文被暂停，恢复它
+                    if (audioContext.state === 'suspended') {
+                        audioContext.resume();
+                    }
+                    
+                    // 创建振荡器和增益节点
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    // 连接节点
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    // 设置音频参数
+                    oscillator.type = 'sine';
+                    oscillator.frequency.value = 440; // 440Hz 是A4音高
+                    gainNode.gain.value = 0.1;
+                    
+                    // 设置衰减
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.2);
+                    
+                    // 播放音频
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.2);
+                } catch (e) {
+                    // 如果浏览器不支持Web Audio API，静默失败
+                    console.log('无法播放点击音效:', e);
+                }
+            }
+            
+            // 为所有可点击的按钮添加点击音效
+            const buttons = document.querySelectorAll('button, [class*="btn-hover"], [class*="touch-friendly"]');
+            buttons.forEach(button => {
+                // 检查是否已经有点击事件监听
+                const hasClickListener = getEventListeners(button).click && getEventListeners(button).click.length > 0;
+                
+                if (hasClickListener) {
+                    // 如果已经有点击事件监听，保存原始的事件处理函数
+                    const originalListeners = getEventListeners(button).click;
+                    
+                    // 移除所有原始的点击事件监听
+                    originalListeners.forEach(listener => {
+                        button.removeEventListener('click', listener.listener);
+                    });
+                    
+                    // 添加新的点击事件监听，先播放音效，然后调用原始的处理函数
+                    button.addEventListener('click', function(e) {
+                        playClickSound();
+                        // 调用原始的事件处理函数
+                        originalListeners.forEach(listener => {
+                            if (listener.listener) {
+                                listener.listener.call(this, e);
+                            }
+                        });
+                    });
+                } else {
+                    // 如果没有点击事件监听，直接添加一个只播放音效的点击事件监听
+                    button.addEventListener('click', playClickSound);
+                }
+            });
+        }
+        
+        // 辅助函数：获取元素的事件监听器（用于Safari和其他现代浏览器）
+        function getEventListeners(element) {
+            if (element._eventListeners) {
+                return element._eventListeners;
+            }
+            
+            // 对于没有_eventListeners属性的浏览器，返回一个模拟对象
+            return {
+                click: []
+            };
         }
 
         // 初始化景点卡片滑动
