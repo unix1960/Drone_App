@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>我的 - 合伙人管理系统</title>
+    <title>我的 - 无人机打卡项目</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
     <script>
         tailwind.config = {
             theme: {
@@ -20,8 +19,9 @@
                         light: '#F8FAFC',
                         'gray-medium': '#64748B',
                         'gray-light': '#E2E8F0',
-                        'blue-primary': '#3B82F6',
-                        'blue-secondary': '#1D4ED8',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
                     },
                     fontFamily: {
                         inter: ['Inter', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'sans-serif'],
@@ -32,9 +32,6 @@
     </script>
     <style type="text/tailwindcss">
         @layer utilities {
-            .text-shadow {
-                text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            }
             .touch-friendly {
                 touch-action: manipulation;
                 -webkit-tap-highlight-color: transparent;
@@ -47,334 +44,497 @@
                 box-shadow: 0 2px 8px rgba(0,0,0,0.06);
                 border-radius: 8px;
             }
-            .content-container {
-                min-height: calc(100vh - 4rem); /* 4rem is the height of the bottom nav */
-                padding-bottom: calc(4rem + 1rem); /* nav height + extra padding */
+            .menu-item {
+                transition: background-color 0.2s ease;
             }
-            .setting-item:active {
-                background-color: rgba(0,0,0,0.03);
+            .menu-item:active {
+                background-color: #F1F5F9;
             }
-            .elder-mode {
-                font-size: 18px;
-            }
-            .elder-mode .setting-item {
-                height: 60px;
-                padding: 0 20px;
-            }
-            .elder-mode .setting-item i {
-                font-size: 24px;
-            }
-            .elder-mode .setting-item span {
-                font-size: 18px;
-            }
-            .toggle-switch {
+            .avatar-container {
                 position: relative;
-                display: inline-block;
-                width: 50px;
-                height: 26px;
             }
-            .toggle-switch input {
-                opacity: 0;
-                width: 0;
-                height: 0;
-            }
-            .toggle-slider {
+            .avatar-badge {
                 position: absolute;
-                cursor: pointer;
-                top: 0;
-                left: 0;
-                right: 0;
                 bottom: 0;
-                background-color: #ccc;
-                transition: .4s;
-                border-radius: 26px;
-            }
-            .toggle-slider:before {
-                position: absolute;
-                content: "";
-                height: 18px;
-                width: 18px;
-                left: 4px;
-                bottom: 4px;
-                background-color: white;
-                transition: .4s;
+                right: 0;
+                width: 20px;
+                height: 20px;
                 border-radius: 50%;
+                border: 2px solid white;
             }
-            input:checked + .toggle-slider {
-                background-color: var(--primary);
+            .customer-service {
+                position: fixed;
+                bottom: 80px;
+                right: 1.5rem;
+                width: 56px;
+                height: 56px;
+                border-radius: 50%;
+                background-color: #FF5252;
+                color: white;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 24px;
+                box-shadow: 0 4px 12px rgba(255, 82, 82, 0.5);
+                z-index: 50;
+                border: 2px solid white;
             }
-            input:checked + .toggle-slider:before {
-                transform: translateX(24px);
+            .customer-service:active {
+                transform: scale(0.95);
+            }
+            .logout-btn {
+                padding: 0.75rem;
+                font-size: 1rem;
             }
         }
     </style>
+    <script>
+        // 模拟用户数据
+        const userData = {
+            name: '张三',
+            phone: '138****6789',
+            level: '高级合伙人',
+            points: 12,
+            balance: 20,
+            completedOrders: 286,
+            rating: 4.9,
+            avatar: 'https://picsum.photos/id/1005/200/200',
+            joinDate: '2025-06-15'
+        };
+        
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            // 填充用户数据
+            document.getElementById('userName').innerText = userData.name;
+            document.getElementById('userLevel').innerText = userData.level;
+            document.getElementById('userPhone').innerText = userData.phone;
+            document.getElementById('userPoints').innerText = userData.points;
+            document.getElementById('userBalance').innerText = userData.balance;
+            document.getElementById('completedOrders').innerText = userData.completedOrders;
+            document.getElementById('userAvatar').src = userData.avatar;
+            
+            // 绑定运维模式点击事件
+            document.getElementById('operation-mode-item').addEventListener('click', showOperationModeModal);
+            
+            // 绑定关闭运维模式弹窗事件
+            document.getElementById('cancel-operation-mode').addEventListener('click', hideOperationModeModal);
+            
+            // 绑定运维模式登录表单提交事件
+            document.getElementById('operation-login-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                loginOperationMode();
+            });
+            
+            // 点击弹窗外部关闭
+            document.getElementById('operation-mode-modal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    hideOperationModeModal();
+                }
+            });
+            
+            // 绑定修改密码弹窗事件
+            document.getElementById('change-password-item').addEventListener('click', showChangePasswordModal);
+            document.getElementById('cancel-change-password').addEventListener('click', hideChangePasswordModal);
+            document.getElementById('change-password-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                submitChangePassword();
+            });
+            document.getElementById('password-modal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    hideChangePasswordModal();
+                }
+            });
+            
+            // 绑定关于我们弹窗事件
+            document.getElementById('about-us-item').addEventListener('click', showAboutUsModal);
+            document.getElementById('close-about-us').addEventListener('click', hideAboutUsModal);
+            document.getElementById('about-us-modal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    hideAboutUsModal();
+                }
+            });
+        });
+        
+        // 运维模式功能
+        function showOperationModeModal() {
+            document.getElementById('operation-mode-modal').classList.remove('hidden');
+        }
+        
+        function hideOperationModeModal() {
+            document.getElementById('operation-mode-modal').classList.add('hidden');
+        }
+        
+        function loginOperationMode() {
+            const username = document.getElementById('operation-username').value;
+            const password = document.getElementById('operation-password').value;
+            
+            if (!username || !password) {
+                alert('请输入运维账号和密码');
+                return;
+            }
+            
+            // 模拟验证（实际项目中应该调用API验证）
+            if (username === 'admin' && password === 'admin123') {
+                alert('运维模式登录成功');
+                hideOperationModeModal();
+                
+                // 启用运维模式下的特殊功能
+                localStorage.setItem('operationMode', 'true');
+                
+                // 跳转到设备页面，显示无人机绑定按钮
+                window.location.href = 'device.html';
+            } else {
+                alert('运维账号或密码错误');
+            }
+        }
+        
+        // 修改密码功能
+        function showChangePasswordModal() {
+            document.getElementById('password-modal').classList.remove('hidden');
+        }
+        
+        function hideChangePasswordModal() {
+            document.getElementById('password-modal').classList.add('hidden');
+            // 清空表单
+            document.getElementById('old-password').value = '';
+            document.getElementById('new-password').value = '';
+            document.getElementById('confirm-password').value = '';
+        }
+        
+        function submitChangePassword() {
+            const oldPassword = document.getElementById('old-password').value;
+            const newPassword = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            
+            if (!oldPassword || !newPassword || !confirmPassword) {
+                alert('请填写所有密码字段');
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                alert('新密码与确认密码不一致');
+                return;
+            }
+            
+            // 模拟验证（实际项目中应该调用API验证）
+            if (oldPassword === 'password123') { // 假设原密码是password123
+                // 模拟API调用修改密码
+                setTimeout(() => {
+                    alert('密码修改成功');
+                    hideChangePasswordModal();
+                }, 500);
+            } else {
+                alert('原密码不正确');
+            }
+        }
+        
+        // 关于我们功能
+        function showAboutUsModal() {
+            document.getElementById('about-us-modal').classList.remove('hidden');
+        }
+        
+        function hideAboutUsModal() {
+            document.getElementById('about-us-modal').classList.add('hidden');
+        }
+        
+        // 查看消息中心
+        function viewMessageCenter() {
+            window.location.href = 'notifications.html';
+        }
+        
+        // 查看服务景点
+        function viewServiceSpots() {
+            alert('查看已绑定的服务景点');
+        }
+        
+        // 退出登录
+        function logout() {
+            if (confirm('确定要退出登录吗？')) {
+                // 清除用户状态
+                localStorage.removeItem('operationMode');
+                alert('已退出登录');
+                window.location.href = 'login.html';
+            }
+        }
+        
+        // 查看无人机信息
+        function viewDeviceInfo() {
+            window.location.href = 'device.html';
+        }
+        
+        // 查看收益明细
+        function viewRevenueDetails() {
+            window.location.href = 'report.html';
+        }
+        
+        // 拨打客服热线
+        function callCustomerService() {
+            // 实际项目中应该使用tel:链接
+            window.location.href = 'tel:400-123-4567';
+        }
+    </script>
 </head>
-<body class="font-inter bg-light text-dark antialiased touch-action-manipulation">
+<body class="font-inter bg-light text-dark antialiased touch-action-manipulation min-h-screen">
     <!-- 页面容器 -->
-    <div class="content-container w-full safe-area-bottom">
-        <!-- 头部导航 -->
-        <header class="bg-white border-b border-gray-light sticky top-0 z-40">
-            <div class="flex items-center justify-between h-14 px-4">
-                <button onclick="navigateToPage('login.html')" class="flex items-center text-gray-medium touch-friendly">
-                    <i class="fa fa-sign-out mr-1"></i>
-                    <span class="text-sm">退出</span>
-                </button>
-                <h1 class="font-bold text-dark">我的</h1>
-                <button onclick="showNotifications()" class="relative text-gray-medium touch-friendly">
-                    <i class="fa fa-bell text-xl"></i>
-                    <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-white text-[10px] flex items-center justify-center">2</span>
-                </button>
+    <div class="min-h-screen w-full pb-16 safe-area-bottom">
+        <!-- 用户信息区域 -->
+        <section class="bg-gradient-to-b from-primary to-secondary p-6 relative overflow-hidden">
+            <div class="absolute inset-0 flex items-center justify-center">
+                <i class="fa fa-paper-plane text-white text-9xl opacity-10"></i>
             </div>
-        </header>
-
-        <!-- 用户信息 -->
-        <section class="p-4">
-            <div class="miniprogram-card bg-gradient-to-r from-primary to-blue-secondary p-4 text-white">
-                <div class="flex items-center">
-                    <div class="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center mr-4">
-                        <i class="fa fa-user-circle text-3xl"></i>
+            <div class="relative z-10">
+                <div class="flex items-center mb-4">
+                    <div class="avatar-container">
+                        <img id="userAvatar" src="" alt="用户头像" class="w-16 h-16 rounded-full object-cover border-2 border-white">
+                        <div class="avatar-badge bg-green-500 flex items-center justify-center text-white text-xs">
+                            <i class="fa fa-check"></i>
+                        </div>
                     </div>
-                    <div>
-                        <h2 class="font-bold text-lg mb-1">张合伙人</h2>
-                        <p class="text-white/80 text-sm">ID: 10086</p>
+                    <div class="ml-4">
+                        <h2 class="text-white font-bold text-xl" id="userName"></h2>
+                        <div class="flex items-center mt-1">
+                            <span class="text-white/80 text-sm mr-3" id="userPhone"></span>
+                            <span class="bg-white/20 text-white text-xs px-2 py-0.5 rounded-full" id="userLevel"></span>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </section>
-
-        <!-- 常用功能 -->
-        <section class="p-4">
-            <div class="miniprogram-card bg-white">
-                <div class="grid grid-cols-3 gap-0">
-                    <div class="border-r border-b border-gray-light p-4 text-center touch-friendly" onclick="location.href='order.html'">
-                        <i class="fa fa-list-alt text-primary text-xl mb-2"></i>
-                        <p class="text-sm">我的订单</p>
+                
+                <div class="grid grid-cols-3 gap-4 bg-white/10 backdrop-blur-sm rounded-xl p-3">
+                    <div class="text-center">
+                        <p class="text-white font-bold text-xl" id="userPoints"></p>
+                        <p class="text-white/80 text-xs">服务景点</p>
                     </div>
-                    <div class="border-r border-b border-gray-light p-4 text-center touch-friendly" onclick="location.href='device.html'">
-                        <i class="fa fa-cube text-primary text-xl mb-2"></i>
-                        <p class="text-sm">设备管理</p>
+                    <div class="text-center">
+                        <p class="text-white font-bold text-xl" id="userBalance"></p>
+                        <p class="text-white/80 text-xs">管理设备</p>
                     </div>
-                    <div class="border-b border-gray-light p-4 text-center touch-friendly" onclick="location.href='report.html'">
-                        <i class="fa fa-bar-chart text-primary text-xl mb-2"></i>
-                        <p class="text-sm">运营报表</p>
-                    </div>
-                    <div class="border-r border-gray-light p-4 text-center touch-friendly">
-                        <i class="fa fa-cog text-primary text-xl mb-2"></i>
-                        <p class="text-sm">设置</p>
-                    </div>
-                    <div class="border-r border-gray-light p-4 text-center touch-friendly">
-                        <i class="fa fa-question-circle text-primary text-xl mb-2"></i>
-                        <p class="text-sm">帮助</p>
-                    </div>
-                    <div class="p-4 text-center touch-friendly">
-                        <i class="fa fa-star text-primary text-xl mb-2"></i>
-                        <p class="text-sm">收藏</p>
+                    <div class="text-center">
+                        <p class="text-white font-bold text-xl" id="completedOrders"></p>
+                        <p class="text-white/80 text-xs">完成订单</p>
                     </div>
                 </div>
             </div>
         </section>
-
-        <!-- 设置列表 -->
-        <section class="p-4">
-            <div class="miniprogram-card bg-white">
-                <!-- 长者模式 -->
-                <div class="flex items-center justify-between h-14 px-4 border-b border-gray-light setting-item touch-friendly" id="elderModeItem">
-                    <div class="flex items-center">
-                        <i class="fa fa-text-height text-primary mr-3"></i>
-                        <span>长者模式</span>
-                    </div>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="elderModeToggle">
-                        <span class="toggle-slider"></span>
-                    </label>
-                </div>
-                
-                <!-- 运维模式 -->
-                <div class="flex items-center justify-between h-14 px-4 border-b border-gray-light setting-item touch-friendly" id="maintenanceModeItem">
-                    <div class="flex items-center">
-                        <i class="fa fa-tools text-primary mr-3"></i>
-                        <span>运维模式</span>
-                    </div>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="maintenanceModeToggle">
-                        <span class="toggle-slider"></span>
-                    </label>
-                </div>
-                
-                <!-- 无人机信息 -->
-                <div class="flex items-center justify-between h-14 px-4 border-b border-gray-light setting-item touch-friendly" onclick="navigateToPage('device.html')">
-                    <div class="flex items-center">
-                        <i class="fa fa-cube text-primary mr-3"></i>
-                        <span>无人机信息</span>
-                    </div>
-                    <i class="fa fa-angle-right text-gray-medium"></i>
-                </div>
-                
-                <!-- 服务景点 -->
-                <div class="flex items-center justify-between h-14 px-4 border-b border-gray-light setting-item touch-friendly" onclick="showServiceSpots()">
-                    <div class="flex items-center">
-                        <i class="fa fa-map-marker text-primary mr-3"></i>
-                        <span>服务景点</span>
-                    </div>
-                    <i class="fa fa-angle-right text-gray-medium"></i>
-                </div>
-                
-                <!-- 修改密码 -->
-                <div class="flex items-center justify-between h-14 px-4 border-b border-gray-light setting-item touch-friendly" onclick="changePassword()">
-                    <div class="flex items-center">
-                        <i class="fa fa-lock text-primary mr-3"></i>
-                        <span>修改密码</span>
-                    </div>
-                    <i class="fa fa-angle-right text-gray-medium"></i>
-                </div>
-                
-                <!-- 帮助中心 -->
-                <div class="flex items-center justify-between h-14 px-4 border-b border-gray-light setting-item touch-friendly" onclick="showHelpCenter()">
-                    <div class="flex items-center">
-                        <i class="fa fa-question-circle text-primary mr-3"></i>
-                        <span>帮助中心</span>
-                    </div>
-                    <i class="fa fa-angle-right text-gray-medium"></i>
-                </div>
-                
-                <!-- 关于我们 -->
-                <div class="flex items-center justify-between h-14 px-4 setting-item touch-friendly" onclick="showAboutUs()">
-                    <div class="flex items-center">
-                        <i class="fa fa-info-circle text-primary mr-3"></i>
-                        <span>关于我们</span>
-                    </div>
-                    <i class="fa fa-angle-right text-gray-medium"></i>
-                </div>
-            </div>
-        </section>
-
-        <!-- 客服热线 -->
-        <section class="p-4">
-            <div class="miniprogram-card bg-white">
-                <div class="flex items-center justify-between h-14 px-4 setting-item touch-friendly" onclick="callService()">
-                    <div class="flex items-center">
-                        <i class="fa fa-phone text-primary mr-3"></i>
-                        <span>客服热线</span>
-                    </div>
-                    <div class="flex items-center text-primary">
-                        <span>400-888-9999</span>
-                        <i class="fa fa-angle-right ml-2 text-gray-medium"></i>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 退出登录按钮 -->
-        <section class="p-4">
-            <button id="logoutBtn" class="w-full bg-gray-light text-gray-medium py-3 rounded-lg font-medium touch-friendly">
-                退出登录
-            </button>
-        </section>
-
-        <!-- 服务景点弹窗 -->
-        <div id="serviceSpotsModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 hidden">
-            <div class="bg-white rounded-lg w-full max-w-md mx-4 max-h-[80vh] overflow-y-auto">
-                <div class="p-5 border-b border-gray-light flex justify-between items-center">
-                    <h3 class="font-bold text-lg text-dark">服务景点</h3>
-                    <button onclick="closeServiceSpots()" class="text-gray-medium">
-                        <i class="fa fa-times text-xl"></i>
-                    </button>
-                </div>
-                <div class="p-5 space-y-4">
-                    <div class="space-y-3">
-                        <div class="flex items-center p-3 border border-gray-light rounded-lg">
-                            <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mr-3">
-                                <i class="fa fa-map-marker text-primary"></i>
+        
+        <!-- 功能菜单 -->
+        <section class="px-4 mb-4 mt-4">
+            <div class="miniprogram-card bg-white rounded-xl overflow-hidden">
+                <!-- 业务相关 -->
+                <div class="p-4">
+                    <h3 class="text-sm text-gray-medium mb-3">业务管理</h3>
+                    <div class="space-y-px">
+                        <div class="menu-item flex items-center justify-between p-3 bg-gray-50 touch-friendly" onclick="viewDeviceInfo()">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-3">
+                                    <i class="fa fa-paper-plane text-primary"></i>
+                                </div>
+                                <span>无人机信息</span>
                             </div>
-                            <div class="flex-1">
-                                <h4 class="font-medium">福州鼓山景区</h4>
-                                <p class="text-sm text-gray-medium mt-1">负责景点：涌泉寺、摩崖石刻、登山古径、屴崱峰、回龙阁、灵源洞、罗汉台、香炉峰、白云洞</p>
+                            <i class="fa fa-angle-right text-gray-medium"></i>
+                        </div>
+                        <div class="menu-item flex items-center justify-between p-3 bg-gray-50 touch-friendly" onclick="viewServiceSpots()">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center mr-3">
+                                    <i class="fa fa-map-marker text-green-500"></i>
+                                </div>
+                                <span>服务景点</span>
                             </div>
+                            <i class="fa fa-angle-right text-gray-medium"></i>
+                        </div>
+                        <div class="menu-item flex items-center justify-between p-3 bg-gray-50 touch-friendly" onclick="viewRevenueDetails()">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center mr-3">
+                                    <i class="fa fa-line-chart text-purple-500"></i>
+                                </div>
+                                <span>收益明细</span>
+                            </div>
+                            <i class="fa fa-angle-right text-gray-medium"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 账户相关 -->
+                <div class="p-4 border-t border-gray-light">
+                    <h3 class="text-sm text-gray-medium mb-3">账户管理</h3>
+                    <div class="space-y-px">
+                        <div class="menu-item flex items-center justify-between p-3 bg-gray-50 touch-friendly" onclick="viewMessageCenter()">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-3">
+                                    <i class="fa fa-bell-o text-blue-500"></i>
+                                </div>
+                                <div class="flex items-center">
+                                    <span>消息中心</span>
+                                    <span class="ml-2 w-2 h-2 bg-red-500 rounded-full"></span>
+                                </div>
+                            </div>
+                            <i class="fa fa-angle-right text-gray-medium"></i>
+                        </div>
+                        <div id="change-password-item" class="menu-item flex items-center justify-between p-3 bg-gray-50 touch-friendly">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center mr-3">
+                                    <i class="fa fa-lock text-red-500"></i>
+                                </div>
+                                <span>修改密码</span>
+                            </div>
+                            <i class="fa fa-angle-right text-gray-medium"></i>
+                        </div>
+                        <div id="operation-mode-item" class="menu-item flex items-center justify-between p-3 bg-gray-50 touch-friendly">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center mr-3">
+                                    <i class="fa fa-cog text-warning"></i>
+                                </div>
+                                <span>运维模式</span>
+                            </div>
+                            <i class="fa fa-angle-right text-gray-medium"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 帮助与支持 -->
+                <div class="p-4 border-t border-gray-light">
+                    <h3 class="text-sm text-gray-medium mb-3">帮助与支持</h3>
+                    <div class="space-y-px">
+                        <div id="about-us-item" class="menu-item flex items-center justify-between p-3 bg-gray-50 touch-friendly">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 rounded-full bg-cyan-100 flex items-center justify-center mr-3">
+                                    <i class="fa fa-info-circle text-cyan-500"></i>
+                                </div>
+                                <span>关于我们</span>
+                            </div>
+                            <i class="fa fa-angle-right text-gray-medium"></i>
                         </div>
                     </div>
                 </div>
             </div>
+        </section>
+        
+        <!-- 退出登录按钮 -->
+        <section class="px-4 mb-8">
+            <button id="logout-btn" class="logout-btn w-full bg-gray-light text-gray-medium py-3 rounded-lg font-medium touch-friendly" onclick="logout()">
+                退出登录
+            </button>
+        </section>
+        
+        <!-- 底部信息 -->
+        <div class="px-4 text-center text-xs text-gray-medium mb-4">
+            <p>欢迎使用无人机打卡项目 v1.0.0</p>
+            <p class="mt-1">© 2025 无人机打卡项目 版权所有</p>
         </div>
-
-        <!-- 运维模式登录弹窗 -->
-        <div id="maintenanceLoginModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 hidden">
-            <div class="bg-white rounded-lg w-full max-w-md mx-4 overflow-hidden">
-                <div class="p-5 border-b border-gray-light">
-                    <h3 class="font-bold text-lg text-dark">运维模式登录</h3>
+        
+        <!-- 底部导航栏 -->
+        <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-light z-50 safe-area-bottom">
+            <div class="flex justify-around items-center h-16">
+                <div class="tab-item flex flex-col items-center justify-center text-gray-medium touch-friendly" data-page="order" onclick="location.href='order.html'">
+                    <i class="fa fa-list-alt text-lg mb-1"></i>
+                    <span class="text-xs">订单</span>
                 </div>
-                <div class="p-5">
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-dark mb-2">运维账号</label>
-                        <input type="text" id="maintenanceUsername" class="w-full p-3 border border-gray-light rounded-lg focus:outline-none" placeholder="请输入运维账号">
+                <div class="tab-item flex flex-col items-center justify-center text-gray-medium touch-friendly" data-page="device" onclick="location.href='device.html'">
+                    <i class="fa fa-cog text-lg mb-1"></i>
+                    <span class="text-xs">设备</span>
+                </div>
+                <div class="tab-item flex flex-col items-center justify-center text-gray-medium touch-friendly" data-page="report" onclick="location.href='report.html'">
+                    <i class="fa fa-line-chart text-lg mb-1"></i>
+                    <span class="text-xs">报表</span>
+                </div>
+                <div class="tab-item flex flex-col items-center justify-center text-primary touch-friendly active" data-page="profile" onclick="location.href='profile.html'">
+                    <i class="fa fa-user text-lg mb-1"></i>
+                    <span class="text-xs">我的</span>
+                </div>
+            </div>
+        </nav>
+    </div>
+    
+    <!-- 运维模式登录弹窗 -->
+    <div id="operation-mode-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
+        <div class="bg-white rounded-xl w-11/12 max-w-md p-5">
+            <h3 class="text-lg font-bold text-center mb-4">运维模式登录</h3>
+            <form id="operation-login-form">
+                <div class="mb-4">
+                    <label for="operation-username" class="block text-sm font-medium text-gray-medium mb-1">运维账号</label>
+                    <input type="text" id="operation-username" class="w-full px-4 py-2 border border-gray-light rounded-lg" placeholder="请输入运维账号">
+                </div>
+                <div class="mb-4">
+                    <label for="operation-password" class="block text-sm font-medium text-gray-medium mb-1">运维密码</label>
+                    <input type="password" id="operation-password" class="w-full px-4 py-2 border border-gray-light rounded-lg" placeholder="请输入运维密码">
+                </div>
+                <div class="flex space-x-3 mt-4">
+                    <button type="button" id="cancel-operation-mode" class="flex-1 bg-gray-light text-dark py-2 rounded-lg">取消</button>
+                    <button type="submit" id="confirm-operation-mode" class="flex-1 bg-warning text-white py-2 rounded-lg">确认</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- 修改密码弹窗 -->
+    <div id="password-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
+        <div class="bg-white rounded-xl w-11/12 max-w-md p-5">
+            <h3 class="text-lg font-bold text-center mb-4">修改密码</h3>
+            <form id="change-password-form">
+                <div class="mb-4">
+                    <label for="old-password" class="block text-sm font-medium text-gray-medium mb-1">原密码</label>
+                    <input type="password" id="old-password" class="w-full px-4 py-2 border border-gray-light rounded-lg" placeholder="请输入原密码">
+                </div>
+                <div class="mb-4">
+                    <label for="new-password" class="block text-sm font-medium text-gray-medium mb-1">新密码</label>
+                    <input type="password" id="new-password" class="w-full px-4 py-2 border border-gray-light rounded-lg" placeholder="请输入新密码">
+                </div>
+                <div class="mb-4">
+                    <label for="confirm-password" class="block text-sm font-medium text-gray-medium mb-1">确认密码</label>
+                    <input type="password" id="confirm-password" class="w-full px-4 py-2 border border-gray-light rounded-lg" placeholder="请再次输入新密码">
+                </div>
+                <div class="flex space-x-3 mt-4">
+                    <button type="button" id="cancel-change-password" class="flex-1 bg-gray-light text-dark py-2 rounded-lg">取消</button>
+                    <button type="submit" class="flex-1 bg-primary text-white py-2 rounded-lg">确认</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- 关于我们弹窗 -->
+    <div id="about-us-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
+        <div class="bg-white rounded-xl w-11/12 max-w-md p-5">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold">关于我们</h3>
+                <button id="close-about-us" class="text-gray-medium">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div class="text-center mb-4">
+                    <div class="w-20 h-20 mx-auto bg-primary/10 rounded-full flex items-center justify-center mb-2">
+                        <i class="fa fa-paper-plane text-primary text-3xl"></i>
                     </div>
-                    <div class="mb-6">
-                        <label class="block text-sm font-medium text-dark mb-2">运维密码</label>
-                        <input type="password" id="maintenancePassword" class="w-full p-3 border border-gray-light rounded-lg focus:outline-none" placeholder="请输入运维密码">
+                    <h4 class="font-bold text-lg">无人机打卡项目</h4>
+                    <p class="text-sm text-gray-medium">版本 1.0.0</p>
+                </div>
+                
+                <div class="text-sm text-gray-medium">
+                    <p class="mb-2">无人机打卡项目是一个创新的景区服务解决方案，通过无人机技术为景区提供高空摄影、视频拍摄等服务，为游客带来全新的旅游体验。</p>
+                    <p class="mb-2">我们致力于通过科技手段提升景区服务质量，为游客提供更丰富、更便捷的旅游服务。</p>
+                    <p>© 2025 无人机打卡项目 版权所有</p>
+                </div>
+                
+                <div class="border-t border-gray-light pt-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-sm">官方网站</span>
+                        <span class="text-primary text-sm">www.drone-checkin.com</span>
                     </div>
-                    <div class="flex space-x-3">
-                        <button id="cancelMaintenanceLoginBtn" class="flex-1 bg-gray-light text-gray-medium py-3 rounded-lg font-medium touch-friendly">
-                            取消
-                        </button>
-                        <button id="confirmMaintenanceLoginBtn" class="flex-1 bg-primary text-white py-3 rounded-lg font-medium touch-friendly">
-                            登录
-                        </button>
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-sm">联系电话</span>
+                        <span class="text-primary text-sm">400-123-4567</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm">电子邮箱</span>
+                        <span class="text-primary text-sm">contact@drone-checkin.com</span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- 底部导航栏 -->
-    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-light z-50 safe-area-bottom">
-        <div class="flex justify-around items-center h-16">
-            <div class="tab-item flex flex-col items-center justify-center text-gray-medium touch-friendly" data-page="order" onclick="location.href='order.html'">
-                <i class="fa fa-list-alt text-lg mb-1"></i>
-                <span class="text-xs">订单</span>
-            </div>
-            <div class="tab-item flex flex-col items-center justify-center text-gray-medium touch-friendly" data-page="device" onclick="location.href='device.html'">
-                <i class="fa fa-cube text-lg mb-1"></i>
-                <span class="text-xs">设备</span>
-            </div>
-            <div class="tab-item flex flex-col items-center justify-center text-gray-medium touch-friendly" data-page="report" onclick="location.href='report.html'">
-                <i class="fa fa-bar-chart text-lg mb-1"></i>
-                <span class="text-xs">报表</span>
-            </div>
-            <div class="tab-item flex flex-col items-center justify-center text-primary touch-friendly active" data-page="profile">
-                <i class="fa fa-user text-lg mb-1"></i>
-                <span class="text-xs">我的</span>
-            </div>
-        </div>
-    </nav>
-
-    <!-- JavaScript交互代码 -->
-    <script src="app.js"></script>
-    <script>
-        // 动态调整内容区域高度
-        function adjustContentHeight() {
-            const navHeight = document.querySelector('nav').offsetHeight;
-            const contentContainer = document.querySelector('.content-container');
-            contentContainer.style.minHeight = `calc(100vh - ${navHeight}px)`;
-            contentContainer.style.paddingBottom = `calc(${navHeight}px + 1rem)`;
-        }
-
-        // 页面加载后调整高度
-        window.addEventListener('load', adjustContentHeight);
-        // 窗口大小改变时重新调整
-        window.addEventListener('resize', adjustContentHeight);
-
-        // 长者模式切换
-        const elderModeToggle = document.getElementById('elderModeToggle');
-        const appBody = document.body;
-
-        elderModeToggle.addEventListener('change', () => {
-            if (elderModeToggle.checked) {
-                appBody.classList.add('elder-mode');
-                showToast('已开启长者模式');
-            } else {
-                appBody.classList.remove('elder-mode');
-                showToast('已关闭长者模式');
-            }
-        });
-    </script>
+    
+    <!-- 客服热线浮动按钮 -->
+    <button class="customer-service" id="customer-service-btn" onclick="callCustomerService()">
+        <i class="fa fa-phone"></i>
+    </button>
 </body>
-</html>
+</html> 

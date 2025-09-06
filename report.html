@@ -21,8 +21,10 @@
                         light: '#F8FAFC',
                         'gray-medium': '#64748B',
                         'gray-light': '#E2E8F0',
-                        'blue-primary': '#3B82F6',
-                        'blue-secondary': '#1D4ED8',
+                        'battery-green': '#10B981',
+                        'battery-yellow': '#FBBF24',
+                        'battery-orange': '#F59E0B',
+                        'battery-red': '#EF4444',
                         'status-success': '#10B981',
                         'status-warning': '#F59E0B',
                         'status-danger': '#EF4444',
@@ -69,22 +71,23 @@
         <!-- 头部导航 -->
         <header class="bg-white border-b border-gray-light sticky top-0 z-40">
             <div class="flex items-center justify-between h-14 px-4">
-                <button onclick="navigateToPage('login.html')" class="flex items-center text-gray-medium touch-friendly">
-                    <i class="fa fa-sign-out mr-1"></i>
-                    <span class="text-sm">退出</span>
-                </button>
+                <div class="w-8"></div> <!-- 占位元素，保持布局平衡 -->
                 <h1 class="font-bold text-dark">运营报表</h1>
-                <div class="flex items-center space-x-2">
-                    <button id="exportBtn" class="text-gray-medium touch-friendly">
-                        <i class="fa fa-download text-xl"></i>
-                    </button>
-                    <button id="dateRangeBtn" class="flex items-center text-gray-medium touch-friendly">
-                        <i class="fa fa-calendar-o mr-1"></i>
-                        <span class="text-sm">最近7天</span>
-                    </button>
-                </div>
+                <div class="w-8"></div> <!-- 占位元素，保持布局平衡 -->
             </div>
         </header>
+
+        <!-- 头部操作区 -->
+        <div class="p-4 bg-white border-b border-gray-light flex justify-between items-center">
+            <button id="exportBtn" class="flex items-center text-primary text-sm">
+                <i class="fa fa-download mr-1"></i>
+                <span>导出报表</span>
+            </button>
+            <button id="dateRangeBtn" class="flex items-center text-gray-medium text-sm">
+                <span>最近7天</span>
+                <i class="fa fa-calendar ml-1"></i>
+            </button>
+        </div>
 
         <!-- 数据概览 -->
         <section class="p-4">
@@ -92,35 +95,35 @@
                 <h2 class="font-bold text-dark mb-4">数据概览</h2>
                 <div class="grid grid-cols-2 gap-4">
                     <!-- 订单总数 -->
-                    <div class="bg-blue-50 rounded-lg p-4">
-                        <p class="text-gray-medium text-sm mb-1">订单总数</p>
+                    <div class="bg-gray-50 rounded-lg p-3">
+                        <p class="text-sm text-gray-medium mb-1">订单总数</p>
                         <div class="flex items-baseline">
-                            <span class="text-3xl font-bold mr-2">128</span>
-                            <span class="text-xs text-status-success">+12%</span>
+                            <h3 class="font-bold text-2xl">28</h3>
+                            <span class="text-xs text-green-500 ml-2">+12.5%</span>
                         </div>
                     </div>
                     <!-- 总收益 -->
-                    <div class="bg-green-50 rounded-lg p-4">
-                        <p class="text-gray-medium text-sm mb-1">总收益</p>
+                    <div class="bg-blue-50 rounded-lg p-3">
+                        <p class="text-sm text-gray-medium mb-1">总收益</p>
                         <div class="flex items-baseline">
-                            <span class="text-3xl font-bold mr-2">¥15,628</span>
-                            <span class="text-xs text-status-success">+8.5%</span>
+                            <h3 class="font-bold text-2xl text-primary">¥1,568</h3>
+                            <span class="text-xs text-green-500 ml-2">+8.3%</span>
+                        </div>
+                    </div>
+                    <!-- 平均客单价 -->
+                    <div class="bg-yellow-50 rounded-lg p-3">
+                        <p class="text-sm text-gray-medium mb-1">平均客单价</p>
+                        <div class="flex items-baseline">
+                            <h3 class="font-bold text-2xl">¥56</h3>
+                            <span class="text-xs text-green-500 ml-2">+5.2%</span>
                         </div>
                     </div>
                     <!-- 拍摄成功率 -->
-                    <div class="bg-purple-50 rounded-lg p-4">
-                        <p class="text-gray-medium text-sm mb-1">拍摄成功率</p>
+                    <div class="bg-green-50 rounded-lg p-3">
+                        <p class="text-sm text-gray-medium mb-1">拍摄成功率</p>
                         <div class="flex items-baseline">
-                            <span class="text-3xl font-bold mr-2">96.2%</span>
-                            <span class="text-xs text-status-success">+1.3%</span>
-                        </div>
-                    </div>
-                    <!-- 设备使用率 -->
-                    <div class="bg-amber-50 rounded-lg p-4">
-                        <p class="text-gray-medium text-sm mb-1">设备使用率</p>
-                        <div class="flex items-baseline">
-                            <span class="text-3xl font-bold mr-2">78.5%</span>
-                            <span class="text-xs text-status-warning">-2.1%</span>
+                            <h3 class="font-bold text-2xl text-green-500">92.3%</h3>
+                            <span class="text-xs text-green-500 ml-2">+2.1%</span>
                         </div>
                     </div>
                 </div>
@@ -137,41 +140,25 @@
             </div>
         </section>
 
-        <!-- 拍摄成功率分析 -->
+        <!-- 收益数据展示 -->
         <section class="p-4">
             <div class="miniprogram-card bg-white p-4">
-                <h2 class="font-bold text-dark mb-4">拍摄成功率分析</h2>
-                <div class="flex flex-col md:flex-row gap-6">
-                    <div class="flex-1">
-                        <div class="chart-container">
-                            <canvas id="successRateChart"></canvas>
-                        </div>
+                <h2 class="font-bold text-dark mb-4">收益数据展示</h2>
+                <div class="chart-container">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+                <div class="grid grid-cols-3 gap-3 mt-4">
+                    <div class="bg-blue-50 rounded-lg p-2 text-center">
+                        <p class="text-xs text-gray-medium mb-1">日均收益</p>
+                        <h3 class="font-bold text-lg text-primary">¥224</h3>
                     </div>
-                    <div class="flex-1 space-y-4">
-                        <div class="bg-gray-50 p-3 rounded-lg">
-                            <div class="flex justify-between items-center mb-2">
-                                <span class="text-sm font-medium">成功订单</span>
-                                <span class="text-sm font-medium">123单 (96.2%)</span>
-                            </div>
-                            <div class="w-full bg-gray-light rounded-full h-2">
-                                <div class="bg-status-success rounded-full h-2 transition-all duration-500" style="width: 96.2%"></div>
-                            </div>
-                        </div>
-                        <div class="bg-gray-50 p-3 rounded-lg">
-                            <div class="flex justify-between items-center mb-2">
-                                <span class="text-sm font-medium">失败订单</span>
-                                <span class="text-sm font-medium">5单 (3.8%)</span>
-                            </div>
-                            <div class="w-full bg-gray-light rounded-full h-2">
-                                <div class="bg-status-danger rounded-full h-2 transition-all duration-500" style="width: 3.8%"></div>
-                            </div>
-                        </div>
-                        <div class="bg-gray-50 p-3 rounded-lg">
-                            <div class="flex justify-between items-center mb-2">
-                                <span class="text-sm font-medium">平均拍摄时长</span>
-                                <span class="text-sm font-medium">12分钟/单</span>
-                            </div>
-                        </div>
+                    <div class="bg-blue-50 rounded-lg p-2 text-center">
+                        <p class="text-xs text-gray-medium mb-1">最高收益日</p>
+                        <h3 class="font-bold text-lg text-primary">¥356</h3>
+                    </div>
+                    <div class="bg-blue-50 rounded-lg p-2 text-center">
+                        <p class="text-xs text-gray-medium mb-1">最低收益日</p>
+                        <h3 class="font-bold text-lg text-primary">¥158</h3>
                     </div>
                 </div>
             </div>
@@ -182,140 +169,197 @@
             <div class="miniprogram-card bg-white p-4">
                 <h2 class="font-bold text-dark mb-4">设备使用率统计</h2>
                 <div class="chart-container">
-                    <canvas id="deviceUsageChart"></canvas>
+                    <canvas id="usageChart"></canvas>
                 </div>
-                <div class="grid grid-cols-3 gap-4 mt-4">
-                    <div class="bg-gray-50 p-3 rounded-lg text-center">
-                        <p class="text-gray-medium text-xs mb-1">平均使用率</p>
-                        <p class="text-lg font-bold">78.5%</p>
+                <div class="grid grid-cols-3 gap-3 mt-4">
+                    <div class="bg-green-50 rounded-lg p-2 text-center">
+                        <p class="text-xs text-gray-medium mb-1">平均使用率</p>
+                        <h3 class="font-bold text-lg text-green-500">68.5%</h3>
                     </div>
-                    <div class="bg-gray-50 p-3 rounded-lg text-center">
-                        <p class="text-gray-medium text-xs mb-1">最高使用率</p>
-                        <p class="text-lg font-bold">92.3%</p>
+                    <div class="bg-green-50 rounded-lg p-2 text-center">
+                        <p class="text-xs text-gray-medium mb-1">最高使用率</p>
+                        <h3 class="font-bold text-lg text-green-500">89.2%</h3>
                     </div>
-                    <div class="bg-gray-50 p-3 rounded-lg text-center">
-                        <p class="text-gray-medium text-xs mb-1">最低使用率</p>
-                        <p class="text-lg font-bold">65.8%</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 收益数据展示 -->
-        <section class="p-4">
-            <div class="miniprogram-card bg-white p-4">
-                <h2 class="font-bold text-dark mb-4">收益数据展示</h2>
-                <div class="chart-container">
-                    <canvas id="revenueChart"></canvas>
-                </div>
-                <div class="grid grid-cols-2 gap-4 mt-4">
-                    <div class="bg-gray-50 p-3 rounded-lg">
-                        <p class="text-gray-medium text-xs mb-1">日均收益</p>
-                        <p class="text-2xl font-bold text-primary">¥2,232</p>
-                    </div>
-                    <div class="bg-gray-50 p-3 rounded-lg">
-                        <p class="text-gray-medium text-xs mb-1">单均收益</p>
-                        <p class="text-2xl font-bold text-primary">¥122.1</p>
+                    <div class="bg-green-50 rounded-lg p-2 text-center">
+                        <p class="text-xs text-gray-medium mb-1">最低使用率</p>
+                        <h3 class="font-bold text-lg text-green-500">42.7%</h3>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- 日期范围选择弹窗 -->
-        <div id="dateRangeModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 hidden">
-            <div class="bg-white rounded-lg w-full max-w-md mx-4 overflow-hidden">
-                <div class="p-5 border-b border-gray-light">
-                    <h3 class="font-bold text-lg text-dark">选择日期范围</h3>
+        <!-- 底部导航 -->
+        <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-light z-30 safe-area-bottom">
+            <div class="flex justify-around items-center h-16">
+                <a href="order.html" class="flex flex-col items-center justify-center text-gray-medium touch-friendly">
+                    <i class="fa fa-list-alt text-xl mb-1"></i>
+                    <span class="text-xs">订单</span>
+                </a>
+                <a href="device.html" class="flex flex-col items-center justify-center text-gray-medium touch-friendly">
+                    <i class="fa fa-cube text-xl mb-1"></i>
+                    <span class="text-xs">设备</span>
+                </a>
+                <a href="report.html" class="flex flex-col items-center justify-center text-primary touch-friendly">
+                    <i class="fa fa-line-chart text-xl mb-1"></i>
+                    <span class="text-xs">报表</span>
+                </a>
+                <a href="profile.html" class="flex flex-col items-center justify-center text-gray-medium touch-friendly">
+                    <i class="fa fa-user text-xl mb-1"></i>
+                    <span class="text-xs">我的</span>
+                </a>
+            </div>
+        </nav>
+    </div>
+
+    <!-- 日期范围选择弹窗 -->
+    <div id="dateRangeModal" class="fixed inset-0 z-50 flex items-end justify-center bg-black/50 hidden">
+        <div class="bg-white rounded-t-lg w-full max-h-[80vh] overflow-y-auto">
+            <div class="p-5 border-b border-gray-light flex justify-between items-center">
+                <h3 class="font-bold text-lg text-dark">选择日期范围</h3>
+                <button id="closeDateRangeBtn" class="text-gray-medium">
+                    <i class="fa fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="p-5 space-y-4">
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-dark">开始日期</label>
+                    <input type="date" id="startDate" class="w-full p-3 border border-gray-light rounded-lg focus:outline-none" value="2025-08-28">
                 </div>
-                <div class="p-5 space-y-4">
-                    <div class="space-y-2">
-                        <button class="w-full p-3 border border-primary bg-primary/5 text-dark rounded-lg text-sm font-medium touch-friendly date-range-option active">
-                            最近7天
-                        </button>
-                        <button class="w-full p-3 border border-gray-light text-dark rounded-lg text-sm font-medium touch-friendly date-range-option">
-                            最近30天
-                        </button>
-                        <button class="w-full p-3 border border-gray-light text-dark rounded-lg text-sm font-medium touch-friendly date-range-option">
-                            本月
-                        </button>
-                        <button class="w-full p-3 border border-gray-light text-dark rounded-lg text-sm font-medium touch-friendly date-range-option">
-                            上月
-                        </button>
-                        <button class="w-full p-3 border border-gray-light text-dark rounded-lg text-sm font-medium touch-friendly date-range-option">
-                            自定义日期
-                        </button>
-                    </div>
-                    <div class="flex space-x-3">
-                        <button id="cancelDateRangeBtn" class="flex-1 bg-gray-light text-gray-medium py-3 rounded-lg font-medium touch-friendly">
-                            取消
-                        </button>
-                        <button id="confirmDateRangeBtn" class="flex-1 bg-primary text-white py-3 rounded-lg font-medium touch-friendly">
-                            确定
-                        </button>
-                    </div>
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-dark">结束日期</label>
+                    <input type="date" id="endDate" class="w-full p-3 border border-gray-light rounded-lg focus:outline-none" value="2025-09-03">
+                </div>
+                <div class="flex space-x-3">
+                    <button id="resetDateBtn" class="flex-1 bg-gray-light text-gray-medium py-3 rounded-lg font-medium touch-friendly">
+                        重置
+                    </button>
+                    <button id="confirmDateBtn" class="flex-1 bg-primary text-white py-3 rounded-lg font-medium touch-friendly">
+                        确认
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 底部导航栏 -->
-    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-light z-50 safe-area-bottom">
-        <div class="flex justify-around items-center h-16">
-            <div class="tab-item flex flex-col items-center justify-center text-gray-medium touch-friendly" data-page="order" onclick="location.href='order.html'">
-                <i class="fa fa-list-alt text-lg mb-1"></i>
-                <span class="text-xs">订单</span>
-            </div>
-            <div class="tab-item flex flex-col items-center justify-center text-gray-medium touch-friendly" data-page="device" onclick="location.href='device.html'">
-                <i class="fa fa-cube text-lg mb-1"></i>
-                <span class="text-xs">设备</span>
-            </div>
-            <div class="tab-item flex flex-col items-center justify-center text-primary touch-friendly active" data-page="report">
-                <i class="fa fa-bar-chart text-lg mb-1"></i>
-                <span class="text-xs">报表</span>
-            </div>
-            <div class="tab-item flex flex-col items-center justify-center text-gray-medium touch-friendly" data-page="profile" onclick="location.href='profile.html'">
-                <i class="fa fa-user text-lg mb-1"></i>
-                <span class="text-xs">我的</span>
-            </div>
-        </div>
-    </nav>
-
     <!-- JavaScript交互代码 -->
     <script src="app.js"></script>
     <script>
-        // 动态调整内容区域高度
-        function adjustContentHeight() {
-            const navHeight = document.querySelector('nav').offsetHeight;
-            const contentContainer = document.querySelector('.content-container');
-            contentContainer.style.minHeight = `calc(100vh - ${navHeight}px)`;
-            contentContainer.style.paddingBottom = `calc(${navHeight}px + 1rem)`;
-        }
-
-        // 页面加载后调整高度
-        window.addEventListener('load', adjustContentHeight);
-        // 窗口大小改变时重新调整
-        window.addEventListener('resize', adjustContentHeight);
-
-        // 初始化图表
-        document.addEventListener('DOMContentLoaded', function() {
+        // 页面加载后初始化
+        window.addEventListener('load', function() {
+            // 初始化图表
             initCharts();
+            
+            // 绑定日期范围选择事件
+            document.getElementById('dateRangeBtn').addEventListener('click', function() {
+                document.getElementById('dateRangeModal').classList.remove('hidden');
+            });
+            
+            // 关闭日期范围选择弹窗
+            document.getElementById('closeDateRangeBtn').addEventListener('click', function() {
+                document.getElementById('dateRangeModal').classList.add('hidden');
+            });
+            
+            // 确认日期范围选择
+            document.getElementById('confirmDateBtn').addEventListener('click', function() {
+                const startDate = document.getElementById('startDate').value;
+                const endDate = document.getElementById('endDate').value;
+                
+                if (new Date(startDate) > new Date(endDate)) {
+                    showToast('开始日期不能晚于结束日期');
+                    return;
+                }
+                
+                // 更新日期显示
+                const formattedStartDate = formatDate(startDate);
+                const formattedEndDate = formatDate(endDate);
+                document.getElementById('dateRangeBtn').querySelector('span').textContent = 
+                    `${formattedStartDate}至${formattedEndDate}`;
+                
+                // 关闭弹窗
+                document.getElementById('dateRangeModal').classList.add('hidden');
+                
+                // 模拟刷新数据
+                showToast('数据更新中...');
+                setTimeout(function() {
+                    refreshCharts(startDate, endDate);
+                    showToast('数据已更新');
+                }, 1000);
+            });
+            
+            // 重置日期
+            document.getElementById('resetDateBtn').addEventListener('click', function() {
+                const today = new Date();
+                const lastWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+                
+                document.getElementById('startDate').value = formatDateInput(lastWeek);
+                document.getElementById('endDate').value = formatDateInput(today);
+            });
+            
+            // 导出报表按钮点击事件
+            document.getElementById('exportBtn').addEventListener('click', function() {
+                showToast('报表导出中...');
+                setTimeout(function() {
+                    showToast('报表导出成功');
+                }, 1000);
+            });
         });
-
-        // 初始化所有图表
+        
+        // 初始化图表
         function initCharts() {
-            // 每日订单量统计图表
+            // 每日订单量图表
             const ordersCtx = document.getElementById('ordersChart').getContext('2d');
-            new Chart(ordersCtx, {
+            const ordersChart = new Chart(ordersCtx, {
+                type: 'line',
+                data: {
+                    labels: ['8/28', '8/29', '8/30', '8/31', '9/1', '9/2', '9/3'],
+                    datasets: [{
+                        label: '订单量',
+                        data: [3, 5, 4, 6, 2, 4, 4],
+                        borderColor: '#3B82F6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // 收益数据图表
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            const revenueChart = new Chart(revenueCtx, {
                 type: 'bar',
                 data: {
-                    labels: ['6/10', '6/11', '6/12', '6/13', '6/14', '6/15', '6/16'],
+                    labels: ['8/28', '8/29', '8/30', '8/31', '9/1', '9/2', '9/3'],
                     datasets: [{
-                        label: '订单数量',
-                        data: [15, 18, 12, 22, 16, 21, 12],
+                        label: '收益(元)',
+                        data: [158, 256, 208, 356, 182, 245, 163],
                         backgroundColor: '#3B82F6',
-                        borderRadius: 6,
-                        barPercentage: 0.6,
-                        categoryPercentage: 0.6
+                        borderRadius: 4
                     }]
                 },
                 options: {
@@ -330,76 +374,31 @@
                         y: {
                             beginAtZero: true,
                             grid: {
-                                display: true,
-                                color: '#f1f5f9'
-                            },
-                            ticks: {
-                                font: {
-                                    size: 10
-                                }
+                                color: 'rgba(0, 0, 0, 0.05)'
                             }
                         },
                         x: {
                             grid: {
                                 display: false
-                            },
-                            ticks: {
-                                font: {
-                                    size: 10
-                                }
                             }
                         }
                     }
                 }
             });
-
-            // 拍摄成功率分析图表
-            const successRateCtx = document.getElementById('successRateChart').getContext('2d');
-            new Chart(successRateCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['成功订单', '失败订单'],
-                    datasets: [{
-                        data: [96.2, 3.8],
-                        backgroundColor: ['#10B981', '#EF4444'],
-                        borderWidth: 0,
-                        cutout: '70%'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return `${context.label}: ${context.parsed}%`;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-
-            // 设备使用率统计图表
-            const deviceUsageCtx = document.getElementById('deviceUsageChart').getContext('2d');
-            new Chart(deviceUsageCtx, {
+            
+            // 设备使用率图表
+            const usageCtx = document.getElementById('usageChart').getContext('2d');
+            const usageChart = new Chart(usageCtx, {
                 type: 'line',
                 data: {
-                    labels: ['6/10', '6/11', '6/12', '6/13', '6/14', '6/15', '6/16'],
+                    labels: ['8/28', '8/29', '8/30', '8/31', '9/1', '9/2', '9/3'],
                     datasets: [{
-                        label: '设备使用率',
-                        data: [82, 88, 75, 92, 80, 73, 65],
-                        borderColor: '#F59E0B',
-                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
-                        fill: true,
+                        label: '使用率(%)',
+                        data: [65, 78, 89, 72, 63, 42, 58],
+                        borderColor: '#10B981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
                         tension: 0.4,
-                        pointBackgroundColor: '#F59E0B',
-                        pointRadius: 4,
-                        pointHoverRadius: 6
+                        fill: true
                     }]
                 },
                 options: {
@@ -414,46 +413,48 @@
                         y: {
                             beginAtZero: true,
                             max: 100,
-                            ticks: {
-                                callback: function(value) {
-                                    return value + '%';
-                                },
-                                font: {
-                                    size: 10
-                                }
-                            },
                             grid: {
-                                display: true,
-                                color: '#f1f5f9'
+                                color: 'rgba(0, 0, 0, 0.05)'
                             }
                         },
                         x: {
                             grid: {
                                 display: false
-                            },
-                            ticks: {
-                                font: {
-                                    size: 10
-                                }
                             }
                         }
                     }
                 }
             });
-
-            // 收益数据展示图表
+        }
+        
+        // 刷新图表数据
+        function refreshCharts(startDate, endDate) {
+            // 这里应该是根据日期范围从服务器获取新数据
+            // 为了演示，我们使用随机生成的数据
+            const ordersCtx = document.getElementById('ordersChart').getContext('2d');
             const revenueCtx = document.getElementById('revenueChart').getContext('2d');
-            new Chart(revenueCtx, {
-                type: 'bar',
+            const usageCtx = document.getElementById('usageChart').getContext('2d');
+            
+            // 销毁旧图表
+            Chart.getChart(ordersCtx)?.destroy();
+            Chart.getChart(revenueCtx)?.destroy();
+            Chart.getChart(usageCtx)?.destroy();
+            
+            // 生成日期标签
+            const dateLabels = generateDateLabels(startDate, endDate);
+            
+            // 重新初始化图表
+            new Chart(ordersCtx, {
+                type: 'line',
                 data: {
-                    labels: ['6/10', '6/11', '6/12', '6/13', '6/14', '6/15', '6/16'],
+                    labels: dateLabels,
                     datasets: [{
-                        label: '日收益',
-                        data: [1850, 2160, 1420, 2580, 1950, 2450, 1420],
-                        backgroundColor: '#10B981',
-                        borderRadius: 6,
-                        barPercentage: 0.6,
-                        categoryPercentage: 0.6
+                        label: '订单量',
+                        data: generateRandomData(dateLabels.length, 2, 7),
+                        borderColor: '#3B82F6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4,
+                        fill: true
                     }]
                 },
                 options: {
@@ -468,96 +469,147 @@
                         y: {
                             beginAtZero: true,
                             grid: {
-                                display: true,
-                                color: '#f1f5f9'
-                            },
-                            ticks: {
-                                callback: function(value) {
-                                    return '¥' + value;
-                                },
-                                font: {
-                                    size: 10
-                                }
+                                color: 'rgba(0, 0, 0, 0.05)'
                             }
                         },
                         x: {
                             grid: {
                                 display: false
-                            },
-                            ticks: {
-                                font: {
-                                    size: 10
-                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            new Chart(revenueCtx, {
+                type: 'bar',
+                data: {
+                    labels: dateLabels,
+                    datasets: [{
+                        label: '收益(元)',
+                        data: generateRandomData(dateLabels.length, 150, 350),
+                        backgroundColor: '#3B82F6',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+            
+            new Chart(usageCtx, {
+                type: 'line',
+                data: {
+                    labels: dateLabels,
+                    datasets: [{
+                        label: '使用率(%)',
+                        data: generateRandomData(dateLabels.length, 40, 90),
+                        borderColor: '#10B981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
                             }
                         }
                     }
                 }
             });
         }
-
-        // 日期范围选择按钮点击事件
-        const dateRangeBtn = document.getElementById('dateRangeBtn');
-        const dateRangeModal = document.getElementById('dateRangeModal');
-        const cancelDateRangeBtn = document.getElementById('cancelDateRangeBtn');
-        const confirmDateRangeBtn = document.getElementById('confirmDateRangeBtn');
-
-        dateRangeBtn.addEventListener('click', () => {
-            dateRangeModal.classList.remove('hidden');
-        });
-
-        cancelDateRangeBtn.addEventListener('click', () => {
-            dateRangeModal.classList.add('hidden');
-        });
-
-        confirmDateRangeBtn.addEventListener('click', () => {
-            // 获取选中的日期范围
-            const selectedOption = document.querySelector('.date-range-option.active');
-            if (selectedOption) {
-                const dateRangeText = selectedOption.textContent.trim();
-                dateRangeBtn.querySelector('span').textContent = dateRangeText;
-                
-                // 模拟加载数据
-                showToast(`正在加载${dateRangeText}的数据...`);
-                
-                setTimeout(() => {
-                    showToast(`数据已更新为${dateRangeText}`);
-                    // 实际应用中应重新加载图表数据
-                }, 1500);
+        
+        // 格式化日期为显示格式
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return `${date.getMonth() + 1}/${date.getDate()}`;
+        }
+        
+        // 格式化日期为输入格式
+        function formatDateInput(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+        
+        // 生成日期标签数组
+        function generateDateLabels(startDate, endDate) {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            const labels = [];
+            
+            const current = new Date(start);
+            while (current <= end) {
+                labels.push(`${current.getMonth() + 1}/${current.getDate()}`);
+                current.setDate(current.getDate() + 1);
             }
             
-            dateRangeModal.classList.add('hidden');
-        });
-
-        // 日期范围选项点击事件
-        const dateRangeOptions = document.querySelectorAll('.date-range-option');
-        dateRangeOptions.forEach(option => {
-            option.addEventListener('click', () => {
-                dateRangeOptions.forEach(opt => {
-                    opt.classList.remove('active', 'border-primary', 'bg-primary/5');
-                    opt.classList.add('border-gray-light');
-                });
-                option.classList.add('active', 'border-primary', 'bg-primary/5');
-                option.classList.remove('border-gray-light');
-            });
-        });
-
-        // 点击弹窗外部关闭
-        dateRangeModal.addEventListener('click', (e) => {
-            if (e.target === dateRangeModal) {
-                dateRangeModal.classList.add('hidden');
+            return labels;
+        }
+        
+        // 生成随机数据
+        function generateRandomData(count, min, max) {
+            return Array.from({length: count}, () => Math.floor(Math.random() * (max - min + 1)) + min);
+        }
+        
+        // 显示提示信息
+        function showToast(message) {
+            // 如果app.js中已实现showToast函数，则使用它
+            if (typeof window.showToast === 'function') {
+                window.showToast(message);
+                return;
             }
-        });
-
-        // 导出按钮点击事件
-        const exportBtn = document.getElementById('exportBtn');
-        exportBtn.addEventListener('click', () => {
-            showToast('正在导出报表...');
             
-            // 模拟导出过程
+            // 否则使用自定义实现
+            const toast = document.createElement('div');
+            toast.className = 'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black/70 text-white px-4 py-2 rounded-lg z-50';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
             setTimeout(() => {
-                showToast('报表导出成功');
-            }, 1500);
-        });
+                toast.classList.add('opacity-0', 'transition-opacity', 'duration-300');
+                setTimeout(() => {
+                    document.body.removeChild(toast);
+                }, 300);
+            }, 2000);
+        }
     </script>
 </body>
 </html>
