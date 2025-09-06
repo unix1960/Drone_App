@@ -33,13 +33,24 @@
     </script>
     <style type="text/tailwindcss">
         @layer utilities {
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            }
             .touch-friendly {
                 touch-action: manipulation;
                 -webkit-tap-highlight-color: transparent;
             }
+            .safe-area-bottom {
+                padding-bottom: constant(safe-area-inset-bottom);
+                padding-bottom: env(safe-area-inset-bottom);
+            }
             .miniprogram-card {
                 box-shadow: 0 2px 8px rgba(0,0,0,0.06);
                 border-radius: 8px;
+            }
+            .content-container {
+                min-height: calc(100vh - 4rem); /* 4rem is the height of the bottom nav */
+                padding-bottom: calc(4rem + 1rem); /* nav height + extra padding */
             }
             .progress-bar {
                 transition: width 0.3s ease;
@@ -54,9 +65,10 @@
         }
     </style>
 </head>
-<body class="font-inter bg-light text-dark antialiased">
-    <div class="min-h-screen w-full">
-        <!-- 顶部导航栏 -->
+<body class="font-inter bg-light text-dark antialiased touch-action-manipulation">
+    <!-- 页面容器 -->
+    <div class="content-container w-full safe-area-bottom">
+        <!-- 头部导航 -->
         <nav class="bg-white border-b border-gray-light px-4 py-3">
             <div class="flex items-center justify-between">
                 <button onclick="history.back()" class="touch-friendly">
@@ -262,7 +274,22 @@
         </div>
     </div>
 
+    <script src="app.js"></script>
     <script>
+        // 动态调整内容区域高度
+        function adjustContentHeight() {
+            const navHeight = document.querySelector('nav').offsetHeight;
+            const contentContainer = document.querySelector('.content-container');
+            contentContainer.style.minHeight = `calc(100vh - ${navHeight}px)`;
+            contentContainer.style.paddingBottom = `calc(${navHeight}px + 1rem)`;
+        }
+
+        // 页面加载后调整高度
+        window.addEventListener('load', adjustContentHeight);
+        // 窗口大小改变时重新调整
+        window.addEventListener('resize', adjustContentHeight);
+
+        // 初始化页面
         class OrderControlApp {
             constructor() {
                 this.orderId = 'ORD001';

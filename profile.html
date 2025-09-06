@@ -47,6 +47,10 @@
                 box-shadow: 0 2px 8px rgba(0,0,0,0.06);
                 border-radius: 8px;
             }
+            .content-container {
+                min-height: calc(100vh - 4rem); /* 4rem is the height of the bottom nav */
+                padding-bottom: calc(4rem + 1rem); /* nav height + extra padding */
+            }
             .setting-item:active {
                 background-color: rgba(0,0,0,0.03);
             }
@@ -105,9 +109,9 @@
         }
     </style>
 </head>
-<body class="font-inter bg-light text-dark antialiased touch-action-manipulation" id="appBody">
+<body class="font-inter bg-light text-dark antialiased touch-action-manipulation">
     <!-- 页面容器 -->
-    <div class="min-h-screen w-full pb-24 safe-area-bottom">
+    <div class="content-container w-full safe-area-bottom">
         <!-- 头部导航 -->
         <header class="bg-white border-b border-gray-light sticky top-0 z-40">
             <div class="flex items-center justify-between h-14 px-4">
@@ -345,9 +349,22 @@
     <!-- JavaScript交互代码 -->
     <script src="app.js"></script>
     <script>
+        // 动态调整内容区域高度
+        function adjustContentHeight() {
+            const navHeight = document.querySelector('nav').offsetHeight;
+            const contentContainer = document.querySelector('.content-container');
+            contentContainer.style.minHeight = `calc(100vh - ${navHeight}px)`;
+            contentContainer.style.paddingBottom = `calc(${navHeight}px + 1rem)`;
+        }
+
+        // 页面加载后调整高度
+        window.addEventListener('load', adjustContentHeight);
+        // 窗口大小改变时重新调整
+        window.addEventListener('resize', adjustContentHeight);
+
         // 长者模式切换
         const elderModeToggle = document.getElementById('elderModeToggle');
-        const appBody = document.getElementById('appBody');
+        const appBody = document.body;
 
         elderModeToggle.addEventListener('change', () => {
             if (elderModeToggle.checked) {
@@ -358,130 +375,6 @@
                 showToast('已关闭长者模式');
             }
         });
-
-        // 运维模式切换
-        const maintenanceModeToggle = document.getElementById('maintenanceModeToggle');
-        const maintenanceLoginModal = document.getElementById('maintenanceLoginModal');
-        const cancelMaintenanceLoginBtn = document.getElementById('cancelMaintenanceLoginBtn');
-        const confirmMaintenanceLoginBtn = document.getElementById('confirmMaintenanceLoginBtn');
-
-        maintenanceModeToggle.addEventListener('change', () => {
-            if (maintenanceModeToggle.checked) {
-                // 如果要开启运维模式，需要先登录
-                maintenanceLoginModal.classList.remove('hidden');
-            } else {
-                // 直接关闭运维模式
-                showToast('已关闭运维模式');
-            }
-        });
-
-        cancelMaintenanceLoginBtn.addEventListener('click', () => {
-            maintenanceLoginModal.classList.add('hidden');
-            maintenanceModeToggle.checked = false;
-        });
-
-        confirmMaintenanceLoginBtn.addEventListener('click', () => {
-            const username = document.getElementById('maintenanceUsername').value.trim();
-            const password = document.getElementById('maintenancePassword').value.trim();
-
-            if (!username || !password) {
-                showToast('请输入运维账号和密码');
-                return;
-            }
-
-            // 模拟登录验证
-            confirmMaintenanceLoginBtn.disabled = true;
-            confirmMaintenanceLoginBtn.textContent = '登录中...';
-            
-            setTimeout(() => {
-                // 假设登录成功
-                showToast('运维模式已开启');
-                maintenanceLoginModal.classList.add('hidden');
-                confirmMaintenanceLoginBtn.disabled = false;
-                confirmMaintenanceLoginBtn.textContent = '登录';
-                
-                // 实际应用中应跳转到运维模式页面或显示运维模式的额外功能
-                // 这里我们简单地改变一下界面样式表示已进入运维模式
-                const maintenanceModeItem = document.getElementById('maintenanceModeItem');
-                maintenanceModeItem.classList.add('bg-primary/5');
-            }, 1500);
-        });
-
-        // 点击弹窗外部关闭
-        maintenanceLoginModal.addEventListener('click', (e) => {
-            if (e.target === maintenanceLoginModal) {
-                maintenanceLoginModal.classList.add('hidden');
-                maintenanceModeToggle.checked = false;
-            }
-        });
-
-        // 服务景点弹窗
-        const serviceSpotsModal = document.getElementById('serviceSpotsModal');
-
-        function showServiceSpots() {
-            serviceSpotsModal.classList.remove('hidden');
-        }
-
-        function closeServiceSpots() {
-            serviceSpotsModal.classList.add('hidden');
-        }
-
-        // 点击弹窗外部关闭
-        serviceSpotsModal.addEventListener('click', (e) => {
-            if (e.target === serviceSpotsModal) {
-                serviceSpotsModal.classList.add('hidden');
-            }
-        });
-
-        // 修改密码
-        function changePassword() {
-            // 这里可以跳转到修改密码页面，或者直接显示修改密码弹窗
-            // 为了简单起见，我们复用登录页面的重置密码功能
-            showToast('跳转到修改密码页面');
-            // 在实际应用中，应该跳转到专门的修改密码页面或显示修改密码弹窗
-        }
-
-        // 帮助中心
-        function showHelpCenter() {
-            showToast('打开帮助中心');
-            // 实际应用中应跳转到帮助中心页面
-        }
-
-        // 关于我们
-        function showAboutUs() {
-            showToast('打开关于我们');
-            // 实际应用中应跳转到关于我们页面
-        }
-
-        // 客服电话
-        function callService() {
-            // 小程序中应使用 wx.makePhoneCall
-            if (typeof wx !== 'undefined') {
-                wx.makePhoneCall({
-                    phoneNumber: '400-888-9999'
-                });
-            } else {
-                window.open('tel:400-888-9999');
-            }
-        }
-
-        // 退出登录
-        const logoutBtn = document.getElementById('logoutBtn');
-
-        logoutBtn.addEventListener('click', () => {
-            if (confirm('确定要退出登录吗？')) {
-                showToast('正在退出登录...');
-                setTimeout(() => {
-                    window.location.href = 'login.html';
-                }, 1000);
-            }
-        });
-
-        // 显示通知
-        function showNotifications() {
-            showToast('查看通知');
-            // 实际应用中应显示通知列表或跳转到通知页面
-        }
     </script>
 </body>
 </html>

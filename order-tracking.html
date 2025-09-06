@@ -50,6 +50,10 @@
                 box-shadow: 0 2px 8px rgba(0,0,0,0.06);
                 border-radius: 8px;
             }
+            .content-container {
+                min-height: calc(100vh - 4rem); /* 4rem is the height of the bottom nav */
+                padding-bottom: calc(4rem + 1rem); /* nav height + extra padding */
+            }
             .drone-status-indicator {
                 position: relative;
             }
@@ -94,9 +98,9 @@
         }
     </style>
 </head>
-<body class="font-inter bg-light text-dark antialiased">
+<body class="font-inter bg-light text-dark antialiased touch-action-manipulation">
     <!-- 页面容器 -->
-    <div class="min-h-screen w-full pb-24 safe-area-bottom">
+    <div class="content-container w-full safe-area-bottom">
         <!-- 头部导航 -->
         <header class="bg-white border-b border-gray-light sticky top-0 z-40 shadow-sm">
             <div class="flex items-center justify-between h-14 px-4">
@@ -509,7 +513,20 @@
     <!-- JavaScript交互代码 -->
     <script src="app.js"></script>
     <script>
-        // 页面加载时初始化
+        // 动态调整内容区域高度
+        function adjustContentHeight() {
+            const navHeight = document.querySelector('nav').offsetHeight;
+            const contentContainer = document.querySelector('.content-container');
+            contentContainer.style.minHeight = `calc(100vh - ${navHeight}px)`;
+            contentContainer.style.paddingBottom = `calc(${navHeight}px + 1rem)`;
+        }
+
+        // 页面加载后调整高度
+        window.addEventListener('load', adjustContentHeight);
+        // 窗口大小改变时重新调整
+        window.addEventListener('resize', adjustContentHeight);
+
+        // 初始化页面
         document.addEventListener('DOMContentLoaded', function() {
             // 模拟实时数据更新
             simulateRealTimeUpdates();

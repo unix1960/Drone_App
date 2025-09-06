@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>消息通知 - 合伙人管理系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#1E40AF',
+                        accent: '#06B6D4',
+                        dark: '#1E293B',
+                        light: '#F8FAFC',
+                        'gray-medium': '#64748B',
+                        'gray-light': '#E2E8F0',
+                        'blue-primary': '#3B82F6',
+                        'blue-secondary': '#1D4ED8',
+                        'status-pending': '#F59E0B',
+                        'status-processing': '#3B82F6',
+                        'status-completed': '#10B981',
+                        'status-canceled': '#6B7280',
+                        'status-failed': '#EF4444',
+                        'alert-high': '#EF4444',
+                        'alert-medium': '#F59E0B',
+                        'alert-low': '#3B82F6',
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            }
+            .touch-friendly {
+                touch-action: manipulation;
+                -webkit-tap-highlight-color: transparent;
+            }
+            .safe-area-bottom {
+                padding-bottom: constant(safe-area-inset-bottom);
+                padding-bottom: env(safe-area-inset-bottom);
+            }
+            .miniprogram-card {
+                box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+                border-radius: 8px;
+            }
+            .content-container {
+                min-height: 100vh; /* Full viewport height since there's no bottom nav */
+                padding-bottom: 1rem; /* Just some padding at the bottom */
+            }
+            .notification-dot {
+                position: relative;
+            }
+            .notification-dot::after {
+                content: '';
+                position: absolute;
+                top: 0;
+                right: 0;
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background-color: #EF4444;
+            }
+            .notification-item {
+                /* Removed colored left border */
+                position: relative;
+            }
+            /* 已读消息置灰 */
+            .notification-item {
+                transition: opacity 0.2s ease;
+            }
+            .notification-item.read {
+                opacity: 0.6;
+            }
+            @keyframes pulse {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.6; }
+            }
+            .pulse {
+                animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            }
+        }
+    </style>
+</head>
+<body class="font-inter bg-light text-dark antialiased touch-action-manipulation">
+    <!-- 页面容器 -->
+    <div class="content-container w-full safe-area-bottom">
+        <!-- 头部导航 -->
+        <header class="bg-white border-b border-gray-light sticky top-0 z-40">
+            <div class="flex items-center justify-between h-14 px-4">
+                <button onclick="location.href='order.html'" class="flex items-center text-gray-medium touch-friendly">
+                    <i class="fa fa-arrow-left mr-1"></i>
+                    <span class="text-sm">返回</span>
+                </button>
+                <h1 class="font-bold text-dark">消息通知 <span id="unreadCount" class="inline-flex items-center justify-center bg-primary text-white text-xs rounded-full w-5 h-5 ml-1">4</span></h1>
+                <button onclick="markAllAsRead()" class="text-primary text-sm touch-friendly">
+                    全部已读
+                </button>
+            </div>
+        </header>
+
+        <!-- 通知设置 -->
+        <section class="p-4 bg-white mb-2">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <i class="fa fa-bell text-primary mr-2"></i>
+                    <span class="font-medium">通知提醒设置</span>
+                </div>
+                <div class="flex items-center">
+                    <span class="text-sm text-gray-medium mr-2">语音提醒</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="voiceAlertToggle" class="sr-only peer" checked>
+                        <div class="w-11 h-6 bg-gray-light rounded-full peer peer-checked:bg-primary peer-focus:ring-4 peer-focus:ring-primary/30 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+                    </label>
+                </div>
+            </div>
+        </section>
+
+        <!-- 通知分类 -->
+        <section class="px-4 py-2">
+            <div class="flex overflow-x-auto space-x-2 pb-2 scrollbar-hide">
+                <button class="whitespace-nowrap px-4 py-2 bg-primary text-white rounded-full text-sm font-medium touch-friendly notification-filter active" data-type="all">
+                    全部通知
+                </button>
+                <button class="whitespace-nowrap px-4 py-2 bg-gray-light text-gray-medium rounded-full text-sm font-medium touch-friendly notification-filter" data-type="order">
+                    订单通知
+                </button>
+                <button class="whitespace-nowrap px-4 py-2 bg-gray-light text-gray-medium rounded-full text-sm font-medium touch-friendly notification-filter" data-type="device">
+                    设备通知
+                </button>
+                <button class="whitespace-nowrap px-4 py-2 bg-gray-light text-gray-medium rounded-full text-sm font-medium touch-friendly notification-filter" data-type="system">
+                    系统通知
+                </button>
+            </div>
+        </section>
+
+        <!-- 通知列表 -->
+        <section class="px-4">
+            <div class="space-y-2" id="notificationList">
+                <!-- 新订单通知 -->
+                <div class="miniprogram-card bg-white p-4 touch-friendly notification-item" data-type="order">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-alert-high/10 rounded-full flex items-center justify-center mr-3">
+                                <i class="fa fa-file-text-o text-alert-high"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-medium">新订单提醒</h3>
+                                <p class="text-sm text-gray-medium mt-1">您有一个新的订单等待处理</p>
+                            </div>
+                        </div>
+                        <span class="text-xs text-gray-medium">10分钟前</span>
+                    </div>
+                    <div class="ml-13 pl-0.5">
+                        <div class="bg-gray-light/50 p-3 rounded-lg">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-medium">订单号</span>
+                                <span>DX20230616001</span>
+                            </div>
+                            <div class="flex justify-between text-sm mt-1">
+                                <span class="text-gray-medium">客户</span>
+                                <span>林先生 (137****6789)</span>
+                            </div>
+                            <div class="flex justify-between text-sm mt-1">
+                                <span class="text-gray-medium">地点</span>
+                                <span>福州鼓山景区 - 涌泉寺</span>
+                            </div>
+                            <!-- 查看订单按钮已移除 -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 订单状态更新通知 -->
+                <div class="miniprogram-card bg-white p-4 touch-friendly notification-item" data-type="order">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-status-completed/10 rounded-full flex items-center justify-center mr-3">
+                                <i class="fa fa-check-circle text-status-completed"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-medium">订单状态更新</h3>
+                                <p class="text-sm text-gray-medium mt-1">您的订单已完成</p>
+                            </div>
+                        </div>
+                        <span class="text-xs text-gray-medium">30分钟前</span>
+                    </div>
+                    <div class="ml-13 pl-0.5">
+                        <div class="bg-gray-light/50 p-3 rounded-lg">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-medium">订单号</span>
+                                <span>DX20230615003</span>
+                            </div>
+                            <div class="flex justify-between text-sm mt-1">
+                                <span class="text-gray-medium">客户</span>
+                                <span>王先生 (135****9012)</span>
+                            </div>
+                            <div class="flex justify-between text-sm mt-1">
+                                <span class="text-gray-medium">状态</span>
+                                <span class="text-status-completed">已完成</span>
+                            </div>
+                            <!-- 查看订单按钮已移除 -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 无人机电池更换提醒 -->
+                <div class="miniprogram-card bg-white p-4 touch-friendly notification-item" data-type="device">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-alert-medium/10 rounded-full flex items-center justify-center mr-3">
+                                <i class="fa fa-battery-quarter text-alert-medium"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-medium">电池电量不足</h3>
+                                <p class="text-sm text-gray-medium mt-1">无人机电池电量低，请及时更换</p>
+                            </div>
+                        </div>
+                        <span class="text-xs text-gray-medium">45分钟前</span>
+                    </div>
+                    <div class="ml-13 pl-0.5">
+                        <div class="bg-gray-light/50 p-3 rounded-lg">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-medium">设备编号</span>
+                                <span>DJ-3PRO-0023</span>
+                            </div>
+                            <div class="flex justify-between text-sm mt-1">
+                                <span class="text-gray-medium">电池电量</span>
+                                <span class="text-alert-medium">15%</span>
+                            </div>
+                            <div class="flex justify-between text-sm mt-1">
+                                <span class="text-gray-medium">预计剩余时间</span>
+                                <span>约5分钟</span>
+                            </div>
+                            <!-- 查看设备按钮已移除 -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 系统通知 -->
+                <div class="miniprogram-card bg-white p-4 touch-friendly notification-item" data-type="system">
+                    <div class="flex justify-between items-start">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center mr-3">
+                                <i class="fa fa-info-circle text-primary"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-medium">系统维护通知</h3>
+                                <p class="text-sm text-gray-medium mt-1">系统将于今晚22:00-23:00进行例行维护，请提前安排好工作</p>
+                            </div>
+                        </div>
+                        <span class="text-xs text-gray-medium">2小时前</span>
+                    </div>
+                </div>
+
+                <!-- 拍摄失败提醒记录已移除 -->
+            </div>
+        </section>
+
+        <!-- 无通知时显示 -->
+        <section id="emptyNotification" class="hidden">
+            <div class="flex flex-col items-center justify-center py-16">
+                <div class="w-24 h-24 bg-gray-light/50 rounded-full flex items-center justify-center mb-4">
+                    <i class="fa fa-bell-o text-gray-medium text-3xl"></i>
+                </div>
+                <p class="text-gray-medium">暂无通知消息</p>
+            </div>
+        </section>
+    </div>
+
+    <!-- 底部导航栏已移除，页面覆盖导航栏 -->
+
+    <!-- 语音提醒弹窗 -->
+    <div id="voiceAlertModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 hidden">
+        <div class="bg-white rounded-lg w-full max-w-xs mx-4">
+            <div class="p-5 flex flex-col items-center">
+                <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-3 pulse">
+                    <i class="fa fa-volume-up text-primary text-2xl"></i>
+                </div>
+                <h3 class="font-bold text-lg text-dark mb-1">语音提醒</h3>
+                <p class="text-center text-gray-medium text-sm mb-4" id="voiceAlertText">您有一个新的订单需要处理</p>
+                <button class="w-full bg-primary text-white py-2 rounded-lg font-medium touch-friendly" onclick="closeVoiceAlert()">
+                    我知道了
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript交互代码 -->
+    <script src="app.js"></script>
+    <script>
+        // 不再需要动态调整内容区域高度，因为页面覆盖导航栏
+        
+        // 通知筛选
+        const notificationFilters = document.querySelectorAll('.notification-filter');
+        const notificationItems = document.querySelectorAll('.notification-item');
+        const emptyNotification = document.getElementById('emptyNotification');
+
+        notificationFilters.forEach(filter => {
+            filter.addEventListener('click', () => {
+                // 更新筛选按钮样式
+                notificationFilters.forEach(f => {
+                    f.classList.remove('bg-primary', 'text-white', 'active');
+                    f.classList.add('bg-gray-light', 'text-gray-medium');
+                });
+                filter.classList.remove('bg-gray-light', 'text-gray-medium');
+                filter.classList.add('bg-primary', 'text-white', 'active');
+
+                // 筛选通知
+                const type = filter.getAttribute('data-type');
+                let visibleCount = 0;
+                
+                notificationItems.forEach(item => {
+                    if (type === 'all' || item.getAttribute('data-type') === type) {
+                        item.style.display = 'block';
+                        visibleCount++;
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+                
+                // 显示或隐藏空状态
+                if (visibleCount === 0) {
+                    emptyNotification.classList.remove('hidden');
+                } else {
+                    emptyNotification.classList.add('hidden');
+                }
+            });
+        });
+
+        // 标记所有通知为已读
+        function markAllAsRead() {
+            const notificationItems = document.querySelectorAll('.notification-item:not(.read)');
+            notificationItems.forEach(item => {
+                item.classList.add('read');
+                item.classList.remove('unread');
+            });
+            updateUnreadCount();
+            showToast('已将全部消息标记为已读');
+        }
+
+        // 标记通知为已读
+        function markAsRead(event) {
+            // 确保不是点击了按钮或链接
+            if (event.target.tagName !== 'BUTTON' && event.target.tagName !== 'A' && 
+                !event.target.closest('button') && !event.target.closest('a')) {
+                const item = event.currentTarget;
+                if (!item.classList.contains('read')) {
+                    item.classList.add('read');
+                    item.classList.remove('unread');
+                    updateUnreadCount();
+                }
+            }
+        }
+
+        // 为所有通知项添加点击事件
+        document.addEventListener('DOMContentLoaded', function() {
+            const notificationItems = document.querySelectorAll('.notification-item');
+            notificationItems.forEach(item => {
+                item.addEventListener('click', markAsRead);
+            });
+            
+            // 初始化未读消息计数
+            updateUnreadCount();
+        });
+        
+        // 更新未读消息计数
+        function updateUnreadCount() {
+            const unreadItems = document.querySelectorAll('.notification-item:not(.read)');
+            const unreadCount = document.getElementById('unreadCount');
+            
+            if (unreadCount) {
+                if (unreadItems.length > 0) {
+                    unreadCount.textContent = unreadItems.length;
+                    unreadCount.classList.remove('hidden');
+                } else {
+                    unreadCount.classList.add('hidden');
+                }
+            }
+        }
+
+        // 查看订单
+        function viewOrder(orderId) {
+            window.location.href = 'order.html?orderId=' + orderId;
+        }
+
+        // 查看设备
+        function viewDevice(deviceId) {
+            window.location.href = 'device.html?deviceId=' + deviceId;
+        }
+
+        // 语音提醒开关
+        const voiceAlertToggle = document.getElementById('voiceAlertToggle');
+        voiceAlertToggle.addEventListener('change', () => {
+            if (voiceAlertToggle.checked) {
+                showToast('已开启语音提醒');
+                localStorage.setItem('voiceAlert', 'true');
+            } else {
+                showToast('已关闭语音提醒');
+                localStorage.setItem('voiceAlert', 'false');
+            }
+        });
+
+        // 初始化语音提醒状态
+        window.addEventListener('DOMContentLoaded', () => {
+            const voiceAlert = localStorage.getItem('voiceAlert');
+            if (voiceAlert === 'false') {
+                voiceAlertToggle.checked = false;
+            }
+            
+            // 模拟收到新通知
+            setTimeout(() => {
+                if (voiceAlertToggle.checked) {
+                    showVoiceAlert('您有一个新的订单需要处理');
+                }
+            }, 3000);
+        });
+
+        // 显示语音提醒
+        function showVoiceAlert(message) {
+            const voiceAlertModal = document.getElementById('voiceAlertModal');
+            const voiceAlertText = document.getElementById('voiceAlertText');
+            
+            voiceAlertText.textContent = message;
+            voiceAlertModal.classList.remove('hidden');
+            
+            // 播放语音提示音
+            const audio = new Audio('data:audio/mpeg;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gTGFTb25vdGhlcXVlLm9yZwBURU5DAAAAHQAAA1N3aXRjaCBQbHVzIMKpIE5DSCBTb2Z0d2FyZQBUSVQyAAAABgAAAzIyMzUAVFNTRQAAAA8AAANMYXZmNTcuODMuMTAwAAAAAAAAAAAAAAD/80DEAAAAA0gAAAAATEFNRTMuMTAwVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQsRbAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQsRbAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV');
+            audio.play();
+        }
+
+        // 关闭语音提醒
+        function closeVoiceAlert() {
+            const voiceAlertModal = document.getElementById('voiceAlertModal');
+            voiceAlertModal.classList.add('hidden');
+        }
+
+        // 显示Toast提示
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `fixed bottom-24 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-lg text-white text-sm z-50 ${type === 'error' ? 'bg-red-500' : 'bg-gray-800'}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html> 

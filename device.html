@@ -98,19 +98,22 @@
             }
             .battery-level {
                 position: absolute;
-                top: 2px;
                 left: 2px;
+                top: 2px;
                 bottom: 2px;
-                background-color: currentColor;
                 border-radius: 1px;
                 transition: width 0.3s ease;
+            }
+            .content-container {
+                min-height: calc(100vh - 4rem); /* 4rem is the height of the bottom nav */
+                padding-bottom: calc(4rem + 1rem); /* nav height + extra padding */
             }
         }
     </style>
 </head>
 <body class="font-inter bg-light text-dark antialiased touch-action-manipulation">
     <!-- 页面容器 -->
-    <div class="min-h-screen w-full pb-24 safe-area-bottom">
+    <div class="content-container w-full safe-area-bottom">
         <!-- 头部导航 -->
         <header class="bg-white border-b border-gray-light sticky top-0 z-40">
             <div class="flex items-center justify-between h-14 px-4">
@@ -433,6 +436,20 @@
     <!-- JavaScript交互代码 -->
     <script src="app.js"></script>
     <script>
+        // 动态调整内容区域高度
+        function adjustContentHeight() {
+            const navHeight = document.querySelector('nav').offsetHeight;
+            const contentContainer = document.querySelector('.content-container');
+            contentContainer.style.minHeight = `calc(100vh - ${navHeight}px)`;
+            contentContainer.style.paddingBottom = `calc(${navHeight}px + 1rem)`;
+        }
+
+        // 页面加载后调整高度
+        window.addEventListener('load', adjustContentHeight);
+        // 窗口大小改变时重新调整
+        window.addEventListener('resize', adjustContentHeight);
+
+        // 设备状态过滤
         // 刷新按钮点击事件
         const refreshBtn = document.getElementById('refreshBtn');
 
