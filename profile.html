@@ -258,7 +258,105 @@
         
         // 查看服务景点
         function viewServiceSpots() {
-            alert('查看已绑定的服务景点');
+            showServiceSpotsModal();
+        }
+        
+        // 服务景点数据
+        const serviceSpotsData = [
+            {
+                id: 1,
+                name: '涌泉寺',
+                address: '福建省福州市晋安区鼓山涌泉寺路',
+                devices: 2,
+                completedOrders: 89,
+                image: 'https://picsum.photos/id/1019/300/200',
+                rating: 4.9
+            },
+            {
+                id: 2,
+                name: '摩崖石刻',
+                address: '福建省福州市晋安区鼓山风景区内',
+                devices: 1,
+                completedOrders: 56,
+                image: 'https://picsum.photos/id/1015/300/200',
+                rating: 4.7
+            },
+            {
+                id: 3,
+                name: '登山古径',
+                address: '福建省福州市晋安区鼓山风景区内',
+                devices: 2,
+                completedOrders: 76,
+                image: 'https://picsum.photos/id/1016/300/200',
+                rating: 4.6
+            },
+            {
+                id: 4,
+                name: '屴崱峰',
+                address: '福建省福州市晋安区鼓山风景区内',
+                devices: 0,
+                completedOrders: 32,
+                image: 'https://picsum.photos/id/1017/300/200',
+                rating: 4.8
+            },
+            {
+                id: 5,
+                name: '回龙阁',
+                address: '福建省福州市晋安区鼓山风景区内',
+                devices: 1,
+                completedOrders: 42,
+                image: 'https://picsum.photos/id/1014/300/200',
+                rating: 4.5
+            }
+        ];
+        
+        // 显示服务景点模态框
+        function showServiceSpotsModal() {
+            const modal = document.getElementById('service-spots-modal');
+            const spotsContainer = document.getElementById('service-spots-container');
+            
+            // 清空容器
+            spotsContainer.innerHTML = '';
+            
+            // 渲染服务景点列表
+            serviceSpotsData.forEach(spot => {
+                const spotCard = document.createElement('div');
+                spotCard.className = 'bg-white rounded-xl overflow-hidden shadow-sm mb-4 miniprogram-card';
+                spotCard.innerHTML = `
+                    <div class="relative">
+                        <img src="${spot.image}" alt="${spot.name}" class="w-full h-40 object-cover">
+                    </div>
+                    <div class="p-4">
+                        <div class="flex justify-between items-start mb-3">
+                            <h4 class="font-bold text-lg">${spot.name}</h4>
+                            <div class="flex items-center text-yellow-500">
+                                <i class="fa fa-star"></i>
+                                <span class="ml-1 text-sm">${spot.rating}</span>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap gap-3 mb-3">
+                            <div class="flex items-center">
+                                <i class="fa fa-map-marker text-gray-medium mr-1"></i>
+                                <span class="text-sm text-gray-medium">${spot.address}</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between text-sm text-gray-medium">
+                            <div>完成订单: <span class="text-dark font-medium">${spot.completedOrders}</span>单</div>
+                        </div>
+                    </div>
+                `;
+                spotsContainer.appendChild(spotCard);
+            });
+            
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        // 隐藏服务景点模态框
+        function hideServiceSpotsModal() {
+            const modal = document.getElementById('service-spots-modal');
+            modal.classList.add('hidden');
+            document.body.style.overflow = '';
         }
         
         // 退出登录
@@ -552,13 +650,29 @@
     </button>
     
     <!-- 退出运维模式漂浮窗口 -->
-    <div id="exit-operation-mode-float" class="fixed top-4 right-4 bg-red-500 text-white p-3 rounded-lg shadow-lg z-50 hidden transition-all duration-300 hover:shadow-xl">
-        <div class="flex items-center">
+    <div id="exit-operation-mode-float" class="fixed top-4 right-4 bg-orange-400 text-white p-3 rounded-lg shadow-lg z-50 hidden transition-all duration-300 hover:shadow-xl">
+        <div class="flex items-center justify-end">
             <i class="fa fa-exclamation-triangle mr-2"></i>
             <span class="mr-2">运维模式</span>
-            <button id="exit-operation-mode-btn" class="bg-white text-red-500 px-2 py-1 rounded text-xs font-medium hover:bg-gray-100 transition-colors">
+            <button id="exit-operation-mode-btn" class="bg-white text-orange-500 px-2 py-1 rounded text-xs font-medium hover:bg-gray-100 transition-colors">
                 退出
             </button>
+        </div>
+    </div>
+    
+    <!-- 服务景点模态框 -->
+    <div id="service-spots-modal" class="fixed inset-0 z-50 hidden">
+        <div class="bg-white w-full h-full overflow-hidden flex flex-col">
+            <div class="sticky top-0 bg-white z-10 flex items-center p-4 border-b border-gray-light">
+                <button id="close-service-spots" class="text-gray-medium mr-auto p-2" onclick="hideServiceSpotsModal()">
+                    <i class="fa fa-chevron-left text-lg"></i>
+                </button>
+                <h3 class="text-lg font-bold text-center flex-1">服务景点</h3>
+                <div class="w-12"></div> <!-- 占位，保持标题居中 -->
+            </div>
+            <div id="service-spots-container" class="p-4 overflow-y-auto flex-1">
+                <!-- 服务景点列表会在这里动态生成 -->
+            </div>
         </div>
     </div>
     
