@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>订单跟踪 - 合伙人管理系统</title>
+    <title>订单拍摄 - 合伙人管理系统</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -51,8 +51,8 @@
                 border-radius: 8px;
             }
             .content-container {
-                min-height: calc(100vh - 4rem); /* 4rem is the height of the bottom nav */
-                padding-bottom: calc(4rem + 1rem); /* nav height + extra padding */
+                min-height: calc(100vh - 4rem);
+                padding-bottom: calc(4rem + 1rem);
             }
             .drone-status-indicator {
                 position: relative;
@@ -89,11 +89,41 @@
                 transform-origin: 50% 50%;
             }
             .hide-scrollbar {
-                -ms-overflow-style: none;  /* IE and Edge */
-                scrollbar-width: none;  /* Firefox */
+                -ms-overflow-style: none;
+                scrollbar-width: none;
             }
             .hide-scrollbar::-webkit-scrollbar {
-                display: none;  /* Chrome, Safari, Opera */
+                display: none;
+            }
+            .card-hover {
+                transition: transform 0.2s ease, box-shadow 0.2s ease;
+            }
+            .card-hover:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            }
+            .btn-hover {
+                transition: all 0.2s ease;
+            }
+            .btn-hover:hover {
+                transform: translateY(-1px);
+            }
+            .btn-hover:active {
+                transform: translateY(1px);
+            }
+            .toast-enter {
+                animation: toastEnter 0.3s ease forwards;
+            }
+            .toast-exit {
+                animation: toastExit 0.3s ease forwards;
+            }
+            @keyframes toastEnter {
+                from { opacity: 0; transform: translate(-50%, 20px); }
+                to { opacity: 1; transform: translate(-50%, 0); }
+            }
+            @keyframes toastExit {
+                from { opacity: 1; transform: translate(-50%, 0); }
+                to { opacity: 0; transform: translate(-50%, 20px); }
             }
         }
     </style>
@@ -102,47 +132,49 @@
     <!-- 页面容器 -->
     <div class="content-container w-full safe-area-bottom">
         <!-- 头部导航 -->
-        <header class="bg-white border-b border-gray-light sticky top-0 z-40 shadow-sm">
+        <header class="bg-white border-b border-gray-light sticky top-0 z-40 shadow-sm transition-all duration-300">
             <div class="flex items-center justify-between h-14 px-4">
                 <div class="flex items-center">
-                    <button onclick="history.back()" class="flex items-center text-gray-medium touch-friendly mr-3">
+                    <button onclick="history.back()" class="flex items-center text-gray-medium touch-friendly mr-3 btn-hover">
                         <i class="fa fa-angle-left text-xl"></i>
-                </button>
-                <div>
+                    </button>
+                    <div>
                         <h1 class="font-bold text-dark">订单拍摄</h1>
                         <div class="text-xs text-gray-medium">订单号: DX20230615001</div>
                     </div>
                 </div>
                 <div class="flex items-center">
-                    <span class="text-green-500 mr-2">在线</span>
+                    <span class="text-status-success mr-2 flex items-center">
+                        <span class="w-2 h-2 bg-status-success rounded-full mr-1"></span>在线
+                    </span>
                     <div class="flex items-center">
                         <i class="fa fa-battery-three-quarters text-dark mr-1"></i>
                         <span class="text-dark">85%</span>
-                </div>
+                    </div>
                 </div>
             </div>
         </header>
 
         <!-- 实时预览区域 -->
-        <section class="relative mb-3 border-b border-gray-200">
-            <img id="live-preview" src="https://picsum.photos/id/1018/800/450" alt="实时预览" class="w-full aspect-video object-cover">
-            <div class="absolute top-3 left-3 px-3 py-1.5 bg-status-danger text-white text-xs rounded-full">
+        <section class="relative mb-3 border-b border-gray-200 overflow-hidden">
+            <img id="live-preview" src="https://picsum.photos/id/1018/800/450" alt="实时预览" class="w-full aspect-video object-cover transition-opacity duration-500">
+            <div class="absolute top-3 left-3 px-3 py-1.5 bg-status-danger text-white text-xs rounded-full shadow-md transform transition-transform duration-300 hover:scale-105">
                 <i class="fa fa-circle mr-1"></i>实时直播
-                    </div>
-            <div class="absolute top-3 right-3 px-3 py-1.5 bg-black/50 text-white text-xs rounded-full">
+            </div>
+            <div class="absolute top-3 right-3 px-3 py-1.5 bg-black/50 text-white text-xs rounded-full shadow-md">
                 <i class="fa fa-signal mr-1"></i>信号强度: 良好
-                    </div>
-            <div class="absolute bottom-3 left-3 text-white text-xs bg-black/50 px-3 py-1.5 rounded-full">
+            </div>
+            <div class="absolute bottom-3 left-3 text-white text-xs bg-black/50 px-3 py-1.5 rounded-full shadow-md">
                 <i class="fa fa-map-marker mr-1"></i>福州鼓山景区 - 涌泉寺
-                    </div>
-            <div class="absolute bottom-3 right-3 text-white text-xs bg-black/50 px-3 py-1.5 rounded-full">
+            </div>
+            <div class="absolute bottom-3 right-3 text-white text-xs bg-black/50 px-3 py-1.5 rounded-full shadow-md">
                 <i class="fa fa-clock-o mr-1"></i>飞行时间: <span id="flight-time">05:25</span>
             </div>
         </section>
 
         <!-- 拍摄进度区域 -->
-        <div class="mx-3 rounded-xl overflow-hidden shadow-sm mb-3">
-        <!-- 拍摄进度 -->
+        <div class="mx-3 rounded-xl overflow-hidden shadow-sm mb-3 bg-white">
+            <!-- 拍摄进度 -->
             <section class="p-4 bg-white border-b border-gray-100">
                 <div class="flex items-center justify-between mb-3">
                     <div class="flex items-center">
@@ -153,8 +185,8 @@
                 
                 <!-- 进度条 -->
                 <div class="mb-4">
-                    <div class="w-full bg-gray-100 rounded-full h-2.5 mb-2">
-                        <div class="bg-primary h-2.5 rounded-full" style="width: 40%"></div>
+                    <div class="w-full bg-gray-100 rounded-full h-2.5 mb-2 overflow-hidden">
+                        <div class="bg-primary h-2.5 rounded-full transition-all duration-1000 ease-out" style="width: 40%"></div>
                     </div>
                     
                     <!-- 景点完成状态指示器 -->
@@ -164,11 +196,11 @@
                                 <i class="fa fa-check text-white text-xs"></i>
                             </div>
                             <span class="text-xs text-gray-medium mt-1">摩崖石刻</span>
-                    </div>
+                        </div>
                         <div class="flex flex-col items-center">
                             <div class="w-4 h-4 rounded-full bg-status-success flex items-center justify-center">
                                 <i class="fa fa-check text-white text-xs"></i>
-                </div>
+                            </div>
                             <span class="text-xs text-gray-medium mt-1">涌泉寺</span>
                         </div>
                         <div class="flex flex-col items-center">
@@ -180,7 +212,7 @@
                         <div class="flex flex-col items-center">
                             <div class="w-4 h-4 rounded-full bg-gray-300 flex items-center justify-center">
                                 <span class="text-white text-xs">4</span>
-                    </div>
+                            </div>
                             <span class="text-xs text-gray-medium mt-1">屴崱峰</span>
                         </div>
                         <div class="flex flex-col items-center">
@@ -194,17 +226,15 @@
                 
                 <!-- 当前拍摄信息 -->
                 <div class="mb-4">
-
-                    
                     <!-- 景点卡片滚动区域 -->
                     <div class="relative">
                         <!-- 卡片滚动容器 -->
                         <div class="flex overflow-x-auto hide-scrollbar snap-x snap-mandatory pb-4" id="location-cards">
                             <!-- 摩崖石刻卡片 -->
                             <div class="flex-shrink-0 w-1/2 pr-1 snap-center">
-                                <div class="bg-white rounded-lg overflow-hidden shadow-sm h-full">
+                                <div class="bg-white rounded-lg overflow-hidden shadow-sm h-full card-hover">
                                     <div class="relative aspect-video">
-                                        <img src="https://picsum.photos/id/29/400/200" alt="摩崖石刻" class="w-full h-full object-cover">
+                                        <img src="https://picsum.photos/id/29/400/200" alt="摩崖石刻" class="w-full h-full object-cover transition-transform duration-500 hover:scale-105">
                                         <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                                         <div class="absolute bottom-2 left-2 text-white">
                                             <div class="font-medium">摩崖石刻</div>
@@ -213,14 +243,14 @@
                                             </div>
                                         </div>
                                     </div>
-                        </div>
+                                </div>
                             </div>
                             
                             <!-- 涌泉寺卡片 -->
                             <div class="flex-shrink-0 w-1/2 px-1 snap-center">
-                                <div class="bg-white rounded-lg overflow-hidden shadow-sm h-full">
+                                <div class="bg-white rounded-lg overflow-hidden shadow-sm h-full card-hover">
                                     <div class="relative aspect-video">
-                                        <img src="https://picsum.photos/id/28/400/200" alt="涌泉寺" class="w-full h-full object-cover">
+                                        <img src="https://picsum.photos/id/28/400/200" alt="涌泉寺" class="w-full h-full object-cover transition-transform duration-500 hover:scale-105">
                                         <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                                         <div class="absolute bottom-2 left-2 text-white">
                                             <div class="font-medium">涌泉寺</div>
@@ -229,14 +259,14 @@
                                             </div>
                                         </div>
                                     </div>
-                        </div>
-                    </div>
-                    
+                                </div>
+                            </div>
+                            
                             <!-- 登山古径卡片 -->
                             <div class="flex-shrink-0 w-1/2 px-1 snap-center">
-                                <div class="bg-white rounded-lg overflow-hidden shadow-sm h-full border-2 border-primary">
+                                <div class="bg-white rounded-lg overflow-hidden shadow-sm h-full border-2 border-primary card-hover">
                                     <div class="relative aspect-video">
-                                        <img src="https://picsum.photos/id/27/400/200" alt="登山古径" class="w-full h-full object-cover">
+                                        <img src="https://picsum.photos/id/27/400/200" alt="登山古径" class="w-full h-full object-cover transition-transform duration-500 hover:scale-105">
                                         <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                                         <div class="absolute bottom-2 left-2 text-white">
                                             <div class="font-medium">登山古径</div>
@@ -248,14 +278,14 @@
                                             当前
                                         </div>
                                     </div>
-                        </div>
+                                </div>
                             </div>
                             
                             <!-- 屴崱峰卡片 -->
                             <div class="flex-shrink-0 w-1/2 px-1 snap-center">
-                                <div class="bg-white rounded-lg overflow-hidden shadow-sm h-full">
+                                <div class="bg-white rounded-lg overflow-hidden shadow-sm h-full card-hover">
                                     <div class="relative aspect-video">
-                                        <img src="https://picsum.photos/id/26/400/200" alt="屴崱峰" class="w-full h-full object-cover">
+                                        <img src="https://picsum.photos/id/26/400/200" alt="屴崱峰" class="w-full h-full object-cover transition-transform duration-500 hover:scale-105">
                                         <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                                         <div class="absolute bottom-2 left-2 text-white">
                                             <div class="font-medium">屴崱峰</div>
@@ -264,14 +294,14 @@
                                             </div>
                                         </div>
                                     </div>
-                        </div>
-                    </div>
-                    
+                                </div>
+                            </div>
+                            
                             <!-- 回龙阁卡片 -->
                             <div class="flex-shrink-0 w-1/2 pl-1 snap-center">
-                                <div class="bg-white rounded-lg overflow-hidden shadow-sm h-full">
+                                <div class="bg-white rounded-lg overflow-hidden shadow-sm h-full card-hover">
                                     <div class="relative aspect-video">
-                                        <img src="https://picsum.photos/id/25/400/200" alt="回龙阁" class="w-full h-full object-cover">
+                                        <img src="https://picsum.photos/id/25/400/200" alt="回龙阁" class="w-full h-full object-cover transition-transform duration-500 hover:scale-105">
                                         <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                                         <div class="absolute bottom-2 left-2 text-white">
                                             <div class="font-medium">回龙阁</div>
@@ -280,12 +310,9 @@
                                             </div>
                                         </div>
                                     </div>
-                        </div>
+                                </div>
                             </div>
                         </div>
-                        
-                        <!-- 滑动提示指示器 -->
-                        <!-- 已删除以节省空间 -->
                     </div>
                 </div>
             
@@ -293,23 +320,25 @@
             <section class="bg-white">
                 <div class="flex items-center justify-between mb-3 px-4 pt-4">
                     <h4 class="text-dark font-medium">样片列表</h4>
-                    <span class="text-primary text-sm">点击预览</span>
+                    <span class="text-primary text-sm flex items-center cursor-pointer hover:underline">
+                        点击预览 <i class="fa fa-angle-right ml-1 text-xs"></i>
+                    </span>
                 </div>
                 <div class="px-4 pb-4">
                     <div class="grid grid-cols-4 gap-2" id="samples-grid">
                         <!-- 摩崖石刻样片 -->
-                        <div class="relative aspect-square rounded-md overflow-hidden shadow-sm" data-location="摩崖石刻">
-                            <img src="https://picsum.photos/id/10/200/200" alt="全景航拍" class="w-full h-full object-cover">
+                        <div class="relative aspect-square rounded-md overflow-hidden shadow-sm transition-all duration-300 hover:shadow-md" data-location="摩崖石刻">
+                            <img src="https://picsum.photos/id/10/200/200" alt="全景航拍" class="w-full h-full object-cover transition-transform duration-500 hover:scale-105">
                             <div class="absolute inset-0 bg-black/30 flex items-center justify-center">
                                 <i class="fa fa-check text-primary text-xl"></i>
                             </div>
                             <div class="absolute bottom-0 inset-x-0 bg-black/50 py-1 text-center">
                                 <span class="text-white text-xs">已确认</span>
-            </div>
+                            </div>
                         </div>
                         
-                        <div class="relative aspect-square rounded-md overflow-hidden shadow-sm" data-location="摩崖石刻">
-                            <img src="https://picsum.photos/id/15/200/200" alt="特写镜头" class="w-full h-full object-cover">
+                        <div class="relative aspect-square rounded-md overflow-hidden shadow-sm transition-all duration-300 hover:shadow-md" data-location="摩崖石刻">
+                            <img src="https://picsum.photos/id/15/200/200" alt="特写镜头" class="w-full h-full object-cover transition-transform duration-500 hover:scale-105">
                             <div class="absolute inset-0 bg-black/30 flex items-center justify-center">
                                 <i class="fa fa-check text-white text-xl"></i>
                             </div>
@@ -318,8 +347,8 @@
                             </div>
                         </div>
                         
-                        <div class="relative aspect-square rounded-md overflow-hidden shadow-sm" data-location="摩崖石刻">
-                            <img src="https://picsum.photos/id/20/200/200" alt="延时摄影" class="w-full h-full object-cover">
+                        <div class="relative aspect-square rounded-md overflow-hidden shadow-sm transition-all duration-300 hover:shadow-md" data-location="摩崖石刻">
+                            <img src="https://picsum.photos/id/20/200/200" alt="延时摄影" class="w-full h-full object-cover transition-transform duration-500 hover:scale-105">
                             <div class="absolute inset-0 bg-primary/30 flex items-center justify-center">
                                 <i class="fa fa-camera text-white text-xl"></i>
                             </div>
@@ -328,7 +357,7 @@
                             </div>
                         </div>
                         
-                        <div class="relative aspect-square rounded-md overflow-hidden bg-gray-100 shadow-sm" data-location="摩崖石刻">
+                        <div class="relative aspect-square rounded-md overflow-hidden bg-gray-100 shadow-sm transition-all duration-300 hover:shadow-md" data-location="摩崖石刻">
                             <div class="absolute inset-0 flex items-center justify-center">
                                 <i class="fa fa-clock-o text-gray-medium text-xl"></i>
                             </div>
@@ -338,17 +367,17 @@
                         </div>
 
                         <!-- 涌泉寺样片 -->
-                        <div class="relative aspect-square rounded-md overflow-hidden shadow-sm hidden" data-location="涌泉寺">
-                            <img src="https://picsum.photos/id/25/200/200" alt="涌泉寺全景" class="w-full h-full object-cover">
+                        <div class="relative aspect-square rounded-md overflow-hidden shadow-sm transition-all duration-300 hover:shadow-md hidden" data-location="涌泉寺">
+                            <img src="https://picsum.photos/id/25/200/200" alt="涌泉寺全景" class="w-full h-full object-cover transition-transform duration-500 hover:scale-105">
                             <div class="absolute inset-0 bg-black/30 flex items-center justify-center">
                                 <i class="fa fa-check text-white text-xl"></i>
                             </div>
                             <div class="absolute bottom-0 inset-x-0 bg-black/50 py-1 text-center">
                                 <span class="text-white text-xs">已完成</span>
-                    </div>
-                </div>
-                
-                        <div class="relative aspect-square rounded-md overflow-hidden bg-gray-100 shadow-sm hidden" data-location="涌泉寺">
+                            </div>
+                        </div>
+                        
+                        <div class="relative aspect-square rounded-md overflow-hidden bg-gray-100 shadow-sm transition-all duration-300 hover:shadow-md hidden" data-location="涌泉寺">
                             <div class="absolute inset-0 flex items-center justify-center">
                                 <i class="fa fa-clock-o text-gray-medium text-xl"></i>
                             </div>
@@ -358,7 +387,7 @@
                         </div>
                         
                         <!-- 登山古径样片 -->
-                        <div class="relative aspect-square rounded-md overflow-hidden bg-gray-100 shadow-sm hidden" data-location="登山古径">
+                        <div class="relative aspect-square rounded-md overflow-hidden bg-gray-100 shadow-sm transition-all duration-300 hover:shadow-md hidden" data-location="登山古径">
                             <div class="absolute inset-0 flex items-center justify-center">
                                 <i class="fa fa-clock-o text-gray-medium text-xl"></i>
                             </div>
@@ -376,13 +405,13 @@
             <!-- 两行两列布局 -->
             <div class="grid grid-cols-2 gap-3 mb-3">
                 <!-- 继续拍摄按钮 -->
-                <button id="togglePauseBtn" class="bg-white text-gray-800 p-4 rounded-lg shadow-sm flex flex-col items-center justify-center touch-friendly">
+                <button id="togglePauseBtn" class="bg-white text-gray-800 p-4 rounded-lg shadow-sm flex flex-col items-center justify-center touch-friendly btn-hover">
                     <i class="fa fa-play text-2xl mb-2 text-green-500"></i>
                     <span>继续拍摄</span>
                 </button>
                 
                 <!-- 返回起点按钮 -->
-                <button class="bg-white text-gray-800 p-4 rounded-lg shadow-sm flex flex-col items-center justify-center touch-friendly">
+                <button class="bg-white text-gray-800 p-4 rounded-lg shadow-sm flex flex-col items-center justify-center touch-friendly btn-hover">
                     <i class="fa fa-home text-2xl mb-2 text-blue-500"></i>
                     <span>返回起点</span>
                 </button>
@@ -390,42 +419,46 @@
             
             <div class="grid grid-cols-2 gap-3 mb-3">
                 <!-- 悬停等待按钮 -->
-                <button class="bg-white text-gray-800 p-4 rounded-lg shadow-sm flex flex-col items-center justify-center touch-friendly">
+                <button class="bg-white text-gray-800 p-4 rounded-lg shadow-sm flex flex-col items-center justify-center touch-friendly btn-hover">
                     <i class="fa fa-hand-paper-o text-2xl mb-2 text-blue-500"></i>
                     <span>悬停等待</span>
-                    </button>
+                </button>
                 
                 <!-- 下一样片按钮 -->
-                <button class="bg-blue-500 text-white p-4 rounded-lg shadow-sm flex flex-col items-center justify-center touch-friendly">
+                <button class="bg-blue-500 text-white p-4 rounded-lg shadow-sm flex flex-col items-center justify-center touch-friendly btn-hover">
                     <i class="fa fa-play text-2xl mb-2"></i>
                     <span>下一样片</span>
-                    </button>
+                </button>
             </div>
             
             <!-- 完成拍摄按钮 - 全宽 -->
-            <button class="w-full bg-emerald-400 text-white p-5 rounded-lg shadow-sm flex items-center justify-center touch-friendly mb-3">
+            <button class="w-full bg-emerald-500 text-white p-5 rounded-lg shadow-sm flex items-center justify-center touch-friendly mb-3 btn-hover">
                 <i class="fa fa-check text-xl mr-2"></i>
                 <span class="text-lg">完成所有拍摄任务</span>
-                    </button>
+            </button>
             
             <!-- 客户联系区域 -->
-            <div class="w-full bg-blue-400 text-white p-4 rounded-lg shadow-sm flex justify-between items-center mb-3">
+            <div class="w-full bg-blue-500 text-white p-4 rounded-lg shadow-sm flex justify-between items-center mb-3 transition-all duration-300 hover:shadow-md btn-hover">
                 <div>
                     <h4 class="font-medium">客户联系</h4>
                     <p class="text-sm text-white/80">有问题及时沟通</p>
                 </div>
-                <button class="bg-white/30 px-5 py-2.5 rounded-lg flex items-center">
+                <button class="bg-white/30 px-5 py-2.5 rounded-lg flex items-center transition-all duration-300 hover:bg-white/40">
                     <i class="fa fa-phone mr-2"></i>
                     <span>拨打电话</span>
                 </button>
             </div>
             
-            <!-- 紧急停止按钮 - 已删除 -->
+            <!-- 紧急停止按钮 -->
+            <button id="emergencyStopBtn" class="w-full emergency-button text-white p-5 rounded-lg flex items-center justify-center touch-friendly">
+                <i class="fa fa-stop text-xl mr-2"></i>
+                <span class="text-lg font-medium">紧急停止</span>
+            </button>
         </div>
 
         <!-- 紧急停止确认弹窗 -->
-        <div id="emergencyStopModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 hidden">
-            <div class="bg-white rounded-lg w-full max-w-md mx-4 overflow-hidden">
+        <div id="emergencyStopModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 opacity-0 pointer-events-none transition-opacity duration-300">
+            <div class="bg-white rounded-lg w-full max-w-md mx-4 overflow-hidden transform scale-95 transition-transform duration-300">
                 <div class="p-5 border-b border-gray-light">
                     <h3 class="font-bold text-lg text-dark text-center">紧急停止确认</h3>
                 </div>
@@ -436,10 +469,10 @@
                         <span class="text-status-danger font-medium">此操作将中断当前拍摄任务</span>
                     </p>
                     <div class="flex space-x-3">
-                        <button id="cancelEmergencyBtn" class="flex-1 bg-gray-light text-gray-medium py-3 rounded-lg font-medium touch-friendly">
+                        <button id="cancelEmergencyBtn" class="flex-1 bg-gray-light text-gray-medium py-3 rounded-lg font-medium touch-friendly btn-hover">
                             取消
                         </button>
-                        <button id="confirmEmergencyBtn" class="flex-1 bg-status-danger text-white py-3 rounded-lg font-medium touch-friendly">
+                        <button id="confirmEmergencyBtn" class="flex-1 bg-status-danger text-white py-3 rounded-lg font-medium touch-friendly btn-hover">
                             确认停止
                         </button>
                     </div>
@@ -448,15 +481,14 @@
         </div>
         
         <!-- 视频预览模态框 -->
-        <div id="videoPreviewModal" class="fixed inset-0 z-50 bg-black touch-friendly hidden">
+        <div id="videoPreviewModal" class="fixed inset-0 z-50 bg-black touch-friendly opacity-0 pointer-events-none transition-opacity duration-300">
             <!-- 顶部导航 -->
             <div class="absolute top-0 left-0 right-0 z-10 p-4 flex items-center justify-between">
-                <button id="closePreviewBtn" class="text-white text-2xl">
+                <button id="closePreviewBtn" class="text-white text-2xl btn-hover">
                     <i class="fa fa-times"></i>
                 </button>
                 <div class="text-white text-center">
                     <h3 class="font-medium" id="previewTitle">摩崖石刻（全景航拍）</h3>
-
                 </div>
                 <div class="text-white text-sm">
                     <span id="currentIndex">1</span> / <span id="totalCount">1</span>
@@ -465,9 +497,9 @@
             
             <!-- 视频播放器 -->
             <div class="h-full flex items-center justify-center">
-                <div class="w-full">
+                <div class="w-full px-4">
                     <div class="relative w-full">
-                        <video id="previewVideo" class="w-full" controls>
+                        <video id="previewVideo" class="w-full rounded-lg shadow-2xl" controls>
                             <source src="" type="video/mp4">
                             您的浏览器不支持视频播放
                         </video>
@@ -482,14 +514,13 @@
                         <h4 id="sampleName" class="font-medium">精彩视频 1</h4>
                         <p class="text-xs opacity-80">视频 · 12分钟</p>
                     </div>
-
                 </div>
                 <div class="grid grid-cols-2 gap-3">
-                    <button id="retakeBtn" class="bg-gray-700 text-white py-3 rounded-lg flex items-center justify-center touch-friendly">
+                    <button id="retakeBtn" class="bg-gray-700 text-white py-3 rounded-lg flex items-center justify-center touch-friendly btn-hover">
                         <i class="fa fa-refresh mr-2"></i>
                         重拍
                     </button>
-                    <button id="approveBtn" class="bg-green-600 text-white py-3 rounded-lg flex items-center justify-center touch-friendly">
+                    <button id="approveBtn" class="bg-green-600 text-white py-3 rounded-lg flex items-center justify-center touch-friendly btn-hover">
                         <i class="fa fa-check mr-2"></i>
                         确认通过
                     </button>
@@ -498,12 +529,12 @@
             
             <!-- 左右滑动区域 -->
             <div class="absolute inset-y-0 left-0 w-16 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity" id="prevSampleBtn">
-                <div class="w-10 h-10 bg-black/50 rounded-full flex items-center justify-center">
+                <div class="w-10 h-10 bg-black/50 rounded-full flex items-center justify-center btn-hover">
                     <i class="fa fa-angle-left text-white text-2xl"></i>
                 </div>
             </div>
             <div class="absolute inset-y-0 right-0 w-16 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity" id="nextSampleBtn">
-                <div class="w-10 h-10 bg-black/50 rounded-full flex items-center justify-center">
+                <div class="w-10 h-10 bg-black/50 rounded-full flex items-center justify-center btn-hover">
                     <i class="fa fa-angle-right text-white text-2xl"></i>
                 </div>
             </div>
@@ -511,20 +542,47 @@
     </div>
 
     <!-- JavaScript交互代码 -->
-    <script src="app.js"></script>
     <script>
         // 动态调整内容区域高度
         function adjustContentHeight() {
-            const navHeight = document.querySelector('nav').offsetHeight;
+            const headerHeight = document.querySelector('header').offsetHeight;
             const contentContainer = document.querySelector('.content-container');
-            contentContainer.style.minHeight = `calc(100vh - ${navHeight}px)`;
-            contentContainer.style.paddingBottom = `calc(${navHeight}px + 1rem)`;
+            if (contentContainer) {
+                contentContainer.style.minHeight = `calc(100vh - ${headerHeight}px)`;
+                contentContainer.style.paddingBottom = `calc(${headerHeight}px + 1rem)`;
+            }
         }
 
         // 页面加载后调整高度
         window.addEventListener('load', adjustContentHeight);
         // 窗口大小改变时重新调整
         window.addEventListener('resize', adjustContentHeight);
+
+        // 显示Toast提示
+        function showToast(message) {
+            // 先移除已有的toast
+            const existingToast = document.querySelector('.toast');
+            if (existingToast) {
+                existingToast.remove();
+            }
+            
+            // 创建Toast元素
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-20 left-1/2 transform -translate-x-1/2 bg-black/70 text-white px-4 py-2 rounded-lg text-sm z-50 toast toast-enter';
+            toast.textContent = message;
+            
+            // 添加到页面
+            document.body.appendChild(toast);
+            
+            // 2秒后移除
+            setTimeout(() => {
+                toast.classList.remove('toast-enter');
+                toast.classList.add('toast-exit');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 2000);
+        }
 
         // 初始化页面
         document.addEventListener('DOMContentLoaded', function() {
@@ -539,6 +597,9 @@
             
             // 初始化景点卡片滑动
             initLocationCards();
+            
+            // 初始化模态框动画
+            initModalAnimations();
         });
 
         // 初始化样片缩略图点击事件
@@ -578,19 +639,17 @@
         // 初始化视频预览模态框
         function initVideoPreviewModal() {
             const modal = document.getElementById('videoPreviewModal');
+            if (!modal) return;
+            
             const closeBtn = document.getElementById('closePreviewBtn');
             const prevBtn = document.getElementById('prevSampleBtn');
             const nextBtn = document.getElementById('nextSampleBtn');
             const retakeBtn = document.getElementById('retakeBtn');
             const approveBtn = document.getElementById('approveBtn');
-            const shareBtn = document.getElementById('shareBtn');
-            const downloadBtn = document.getElementById('downloadBtn');
-            
-            if (!modal) return;
             
             // 关闭按钮
             closeBtn.addEventListener('click', () => {
-                modal.classList.add('hidden');
+                hideModal(modal);
                 document.getElementById('previewVideo').pause();
             });
             
@@ -608,7 +667,7 @@
             retakeBtn.addEventListener('click', () => {
                 if (confirm('确定要重新拍摄此样片吗？')) {
                     showToast('已安排重新拍摄');
-                    modal.classList.add('hidden');
+                    hideModal(modal);
                 }
             });
             
@@ -635,17 +694,7 @@
                     }
                 }
                 
-                modal.classList.add('hidden');
-            });
-            
-            // 分享按钮
-            shareBtn.addEventListener('click', () => {
-                showToast('分享功能开发中...');
-            });
-            
-            // 下载按钮
-            downloadBtn.addEventListener('click', () => {
-                showToast('正在下载视频...');
+                hideModal(modal);
             });
             
             // 添加触摸滑动支持
@@ -654,7 +703,7 @@
             
             modal.addEventListener('touchstart', (e) => {
                 touchStartX = e.changedTouches[0].screenX;
-            });
+            }, { passive: true });
             
             modal.addEventListener('touchend', (e) => {
                 touchEndX = e.changedTouches[0].screenX;
@@ -711,7 +760,7 @@
             totalCount.textContent = previewableSamples.length.toString();
             
             // 显示模态框
-            modal.classList.remove('hidden');
+            showModal(modal);
             
             // 自动播放视频
             video.play().catch(e => console.log('自动播放失败:', e));
@@ -746,11 +795,11 @@
         
         // 初始化控制按钮
         function initControlButtons() {
-        // 紧急停止按钮点击事件
-        const emergencyStopBtn = document.getElementById('emergencyStopBtn');
-        const emergencyStopModal = document.getElementById('emergencyStopModal');
-        const cancelEmergencyBtn = document.getElementById('cancelEmergencyBtn');
-        const confirmEmergencyBtn = document.getElementById('confirmEmergencyBtn');
+            // 紧急停止按钮点击事件
+            const emergencyStopBtn = document.getElementById('emergencyStopBtn');
+            const emergencyStopModal = document.getElementById('emergencyStopModal');
+            const cancelEmergencyBtn = document.getElementById('cancelEmergencyBtn');
+            const confirmEmergencyBtn = document.getElementById('confirmEmergencyBtn');
 
             // 暂停/继续拍摄切换按钮
             const togglePauseBtn = document.getElementById('togglePauseBtn');
@@ -765,6 +814,7 @@
                             <i class="fa fa-play text-2xl mb-2 text-green-500"></i>
                             <span>继续拍摄</span>
                         `;
+                        showToast('已暂停拍摄');
                     } else {
                         // 切换为暂停拍摄
                         togglePauseBtn.innerHTML = `
@@ -777,31 +827,31 @@
             }
 
             if (emergencyStopBtn) {
-        emergencyStopBtn.addEventListener('click', () => {
-            emergencyStopModal.classList.remove('hidden');
-        });
+                emergencyStopBtn.addEventListener('click', () => {
+                    showModal(emergencyStopModal);
+                });
             }
 
-        cancelEmergencyBtn.addEventListener('click', () => {
-            emergencyStopModal.classList.add('hidden');
-        });
+            cancelEmergencyBtn.addEventListener('click', () => {
+                hideModal(emergencyStopModal);
+            });
 
-        confirmEmergencyBtn.addEventListener('click', () => {
-            emergencyStopModal.classList.add('hidden');
-            showToast('无人机正在紧急返航');
-            
-            // 模拟无人机返航过程
-            setTimeout(() => {
-                window.location.href = 'order.html';
-            }, 3000);
-        });
+            confirmEmergencyBtn.addEventListener('click', () => {
+                hideModal(emergencyStopModal);
+                showToast('无人机正在紧急返航');
+                
+                // 模拟无人机返航过程
+                setTimeout(() => {
+                    window.location.href = 'order.html';
+                }, 3000);
+            });
 
-        // 点击弹窗外部关闭
-        emergencyStopModal.addEventListener('click', (e) => {
-            if (e.target === emergencyStopModal) {
-                emergencyStopModal.classList.add('hidden');
-            }
-        });
+            // 点击弹窗外部关闭
+            emergencyStopModal.addEventListener('click', (e) => {
+                if (e.target === emergencyStopModal) {
+                    hideModal(emergencyStopModal);
+                }
+            });
         }
 
         // 初始化景点卡片滑动
@@ -810,11 +860,6 @@
             const samplesGrid = document.getElementById('samples-grid');
             
             if (!locationCards || !samplesGrid) return;
-            
-            // 监听滚动事件 - 移除指示器相关代码
-            locationCards.addEventListener('scroll', function() {
-                // 滚动事件保留，但不再更新指示器
-            });
             
             // 为景点卡片添加点击事件
             const cards = locationCards.querySelectorAll('.flex-shrink-0');
@@ -853,12 +898,22 @@
             // 隐藏所有样片
             allSamples.forEach(sample => {
                 sample.classList.add('hidden');
+                // 添加淡出动画
+                sample.style.opacity = '0';
+                sample.style.transition = 'opacity 0.3s ease';
             });
             
             // 显示选中景点的样片
             const locationSamples = samplesGrid.querySelectorAll(`[data-location="${locationName}"]`);
-            locationSamples.forEach(sample => {
-                sample.classList.remove('hidden');
+            locationSamples.forEach((sample, index) => {
+                // 错开时间显示，创建动画效果
+                setTimeout(() => {
+                    sample.classList.remove('hidden');
+                    // 触发重排后设置opacity
+                    setTimeout(() => {
+                        sample.style.opacity = '1';
+                    }, 10);
+                }, index * 100);
             });
         }
 
@@ -874,25 +929,55 @@
                 document.getElementById('flight-time').textContent = `${minutes}:${seconds}`;
                 
             }, 1000);
+            
+            // 页面离开时清除定时器
+            window.addEventListener('beforeunload', () => {
+                clearInterval(updateInterval);
+            });
         }
-
-        // 显示Toast提示
-        function showToast(message) {
-            // 创建Toast元素
-            const toast = document.createElement('div');
-            toast.className = 'fixed bottom-20 left-1/2 transform -translate-x-1/2 bg-black/70 text-white px-4 py-2 rounded-lg text-sm z-50';
-            toast.textContent = message;
+        
+        // 初始化模态框动画
+        function initModalAnimations() {
+            // 可以在这里添加更多模态框的动画初始化代码
+        }
+        
+        // 显示模态框
+        function showModal(modal) {
+            if (!modal) return;
             
-            // 添加到页面
-            document.body.appendChild(toast);
+            // 显示背景
+            modal.classList.remove('opacity-0', 'pointer-events-none');
             
-            // 2秒后移除
-            setTimeout(() => {
-                toast.classList.add('opacity-0', 'transition-opacity', 'duration-300');
+            // 显示内容
+            const modalContent = modal.querySelector('div:not([class*="bg-black"])');
+            if (modalContent) {
                 setTimeout(() => {
-                    document.body.removeChild(toast);
-                }, 300);
-            }, 2000);
+                    modalContent.classList.remove('scale-95');
+                    modalContent.classList.add('scale-100');
+                }, 10);
+            }
+            
+            // 禁止背景滚动
+            document.body.style.overflow = 'hidden';
+        }
+        
+        // 隐藏模态框
+        function hideModal(modal) {
+            if (!modal) return;
+            
+            // 隐藏内容
+            const modalContent = modal.querySelector('div:not([class*="bg-black"])');
+            if (modalContent) {
+                modalContent.classList.remove('scale-100');
+                modalContent.classList.add('scale-95');
+            }
+            
+            // 隐藏背景
+            setTimeout(() => {
+                modal.classList.add('opacity-0', 'pointer-events-none');
+                // 允许背景滚动
+                document.body.style.overflow = '';
+            }, 300);
         }
     </script>
 </body>
