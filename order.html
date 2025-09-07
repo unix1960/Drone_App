@@ -9,6 +9,219 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <script>
+        // 切换订单状态筛选
+        function filterOrders(status) {
+            const filterBtns = document.querySelectorAll('.order-filter-btn');
+            filterBtns.forEach(btn => btn.classList.remove('active'));
+            
+            const activeBtn = document.querySelector(`[data-status="${status}"]`);
+            activeBtn.classList.add('active');
+            
+            // 这里应该有筛选订单的逻辑
+            console.log('筛选订单状态:', status);
+            
+            // 简单的模拟筛选逻辑
+            const orderItems = document.querySelectorAll('.order-item');
+            orderItems.forEach(item => {
+                if (status === 'all' || item.dataset.status === status) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+        
+        // 扫码订单识别
+        function scanOrderQRCode() {
+            console.log('扫码订单识别功能启动');
+            
+            // 模拟扫码过程
+            showLoading('正在启动扫码功能...');
+            
+            // 模拟扫码延迟
+            setTimeout(() => {
+                hideLoading();
+                
+                // 模拟扫码成功识别到订单
+                const scannedOrder = {
+                    orderId: 'DX' + Date.now().toString().slice(-8),
+                    scenicSpot: '鼓山风景游览区',
+                    shootingType: '全景航拍',
+                    amount: '¥268',
+                    createTime: new Date().toLocaleString('zh-CN')
+                };
+                
+                // 显示订单信息并询问是否接单
+                if (confirm(`扫码成功！\n\n订单信息：\n订单号: ${scannedOrder.orderId}\n拍摄景点: ${scannedOrder.scenicSpot}\n拍摄内容: ${scannedOrder.shootingType}\n订单金额: ${scannedOrder.amount}\n\n是否接单？`)) {
+                    // 更新订单状态为拍摄中
+                    showToast('订单已接单，状态更新为拍摄中');
+                    
+                    // 这里可以添加实际的接单API调用
+                    console.log('用户确认接单，订单号:', scannedOrder.orderId);
+                    
+                    // 模拟添加新订单到列表
+                    addNewOrderToList(scannedOrder);
+                }
+            }, 1500);
+        }
+        
+        // 生成新订单
+        function generateNewOrder() {
+            console.log('生成新订单功能启动');
+            
+            // 模拟跳转到样片展示页面
+            showLoading('正在跳转到样片展示页面...');
+            
+            setTimeout(() => {
+                hideLoading();
+                
+                // 这里可以存储一些生成订单所需的临时数据到localStorage
+                const orderTempData = {
+                    createTime: new Date().toISOString(),
+                    partnerId: 'PARTNER001', // 假设的合伙人ID
+                    source: 'manual_create'
+                };
+                
+                localStorage.setItem('orderTempData', JSON.stringify(orderTempData));
+                
+                // 在实际应用中，这里应该是页面跳转
+                alert('即将跳转到样片展示页面，您可以选择样片风格并生成新订单');
+                console.log('已存储临时订单数据，准备跳转到样片展示页面');
+                
+                // 跳转到合伙人版样片展示页面
+                // window.location.href = 'partner-sample.html';
+            }, 1000);
+        }
+        
+        // 添加新订单到列表
+        function addNewOrderToList(orderData) {
+            const orderList = document.getElementById('ordersList');
+            
+            if (!orderList) return;
+            
+            // 创建新订单元素
+            const newOrderElement = document.createElement('div');
+            newOrderElement.className = 'miniprogram-card bg-white rounded-xl overflow-hidden animate-fade-in order-item';
+            newOrderElement.dataset.status = 'shooting';
+            newOrderElement.onclick = function() { viewOrderDetails(orderData.orderId, 'shooting'); };
+            newOrderElement.innerHTML = `
+                <div class="p-4 border-b border-gray-light">
+                    <div class="flex justify-between items-center mb-3">
+                        <div class="flex items-center">
+                            <h3 class="font-bold text-dark">订单号: ${orderData.orderId}</h3>
+                        </div>
+                        <div class="bg-status-processing/20 text-status-processing text-xs px-2 py-1 rounded-full">
+                            拍摄中
+                        </div>
+                    </div>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-gray-medium">拍摄景点</span>
+                            <span class="font-medium">${orderData.scenicSpot}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-medium">拍摄内容</span>
+                            <span class="font-medium">${orderData.shootingType}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-medium">订单金额</span>
+                            <span class="font-bold text-primary">${orderData.amount}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-medium">下单时间</span>
+                            <span>${orderData.createTime}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-3 bg-gray-50 flex justify-between items-center">
+                    <div class="text-xs text-gray-medium">
+                        剩余时间: 30:00
+                    </div>
+                    <div class="flex space-x-2">
+                        <button class="px-3 py-1.5 bg-red-500 text-white rounded-lg text-sm font-medium touch-friendly" onclick="cancelOrder('${orderData.orderId}'); event.stopPropagation();">
+                            取消订单
+                        </button>
+                        <button class="px-3 py-1.5 bg-primary text-white rounded-lg text-sm font-medium touch-friendly" onclick="startOrder('${orderData.orderId}'); event.stopPropagation();">
+                            开始拍摄
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // 添加到列表顶部
+            const firstOrder = orderList.firstChild;
+            if (firstOrder) {
+                orderList.insertBefore(newOrderElement, firstOrder);
+            } else {
+                orderList.appendChild(newOrderElement);
+            }
+            
+            // 更新今日概览数据
+            updateTodayOverview();
+        }
+        
+        // 更新今日概览数据
+        function updateTodayOverview() {
+            const todayOrderElement = document.querySelector('.text-2xl.font-bold.text-dark');
+            const todayIncomeElement = document.querySelector('.text-2xl.font-bold.text-green-600');
+            
+            if (todayOrderElement) {
+                let currentOrders = parseInt(todayOrderElement.textContent);
+                todayOrderElement.textContent = (currentOrders + 1).toString();
+            }
+            
+            if (todayIncomeElement) {
+                let currentIncome = parseInt(todayIncomeElement.textContent.replace('¥', '').replace(',', ''));
+                todayIncomeElement.textContent = '¥' + (currentIncome + 268).toLocaleString();
+            }
+        }
+        
+        // 显示加载提示
+        function showLoading(message) {
+            // 检查是否已存在loading元素
+            let loadingElement = document.getElementById('loading-indicator');
+            if (loadingElement) {
+                document.body.removeChild(loadingElement);
+            }
+            
+            // 创建新的loading元素
+            loadingElement = document.createElement('div');
+            loadingElement.id = 'loading-indicator';
+            loadingElement.className = 'fixed inset-0 bg-black/30 flex items-center justify-center z-50';
+            loadingElement.innerHTML = `
+                <div class="bg-white p-4 rounded-lg flex flex-col items-center">
+                    <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary mb-2"></div>
+                    <p class="text-dark">${message || '加载中...'}</p>
+                </div>
+            `;
+            
+            document.body.appendChild(loadingElement);
+        }
+        
+        // 隐藏加载提示
+        function hideLoading() {
+            const loadingElement = document.getElementById('loading-indicator');
+            if (loadingElement) {
+                document.body.removeChild(loadingElement);
+            }
+        }
+        
+        // 保持原有函数兼容性
+        function scanQRCode() {
+            scanOrderQRCode();
+        }
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 为所有订单筛选按钮添加点击事件
+            const filterBtns = document.querySelectorAll('.order-filter-btn');
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    filterOrders(this.dataset.status);
+                });
+            });
+        });
+        
         tailwind.config = {
             theme: {
                 extend: {
@@ -73,6 +286,10 @@
             .stat-icon-button:active {
                 transform: scale(0.9);
             }
+            .order-filter-btn.active {
+                background-color: #3B82F6;
+                color: white;
+            }
         }
     </style>
 </head>
@@ -82,68 +299,65 @@
         <!-- 头部导航 -->
         <header class="bg-white border-b border-gray-light sticky top-0 z-40">
             <div class="flex items-center justify-between h-14 px-4">
-                <div class="w-8"></div> <!-- 占位元素，保持布局平衡 -->
                 <h1 class="font-bold text-dark">订单管理</h1>
-                <button onclick="location.href='notifications.html'" class="relative text-gray-medium touch-friendly">
-                    <i class="fa fa-bell text-xl"></i>
-                    <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-white text-[10px] flex items-center justify-center">3</span>
-                </button>
+                <div class="flex space-x-3">
+                    <button class="text-gray-medium touch-friendly" onclick="scanQRCode()">
+                        <i class="fa fa-qrcode text-xl"></i>
+                    </button>
+                    <button class="text-gray-medium touch-friendly" onclick="location.href='notifications.html'">
+                        <i class="fa fa-bell text-xl"></i>
+                        <span class="absolute top-3 right-3 w-2 h-2 bg-red-500 rounded-full"></span>
+                    </button>
+                </div>
             </div>
         </header>
 
         <!-- 今日概览 -->
-        <section class="p-4">
-            <div class="miniprogram-card bg-gradient-to-r from-primary to-blue-secondary p-5 text-white">
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="bg-white/20 backdrop-blur-sm rounded-lg p-4 stat-card relative">
-                        <div class="absolute top-4 right-4 stat-icon-button">
-                            <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                                <i class="fa fa-list-ul text-white"></i>
-                            </div>
+        <section class="bg-white p-4 border-b border-gray-light">
+            <div class="grid grid-cols-2 gap-4">
+                <div class="miniprogram-card p-4 bg-gradient-to-br from-blue-50 to-white">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-medium mb-1">今日订单</p>
+                            <p class="text-2xl font-bold text-dark">12</p>
                         </div>
-                        <p class="text-white/80 text-sm mb-1">今日订单</p>
-                        <div class="flex items-baseline">
-                            <span class="text-3xl font-bold mr-2">12</span>
-                            <span class="text-xs text-white/80">单</span>
-                        </div>
-                        <div class="text-xs text-white/90 mt-1 flex items-center">
-                            <i class="fa fa-arrow-up text-green-300 mr-1"></i>较昨日 +2单 (+20%)
+                        <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                            <i class="fa fa-list-ul text-primary text-xl"></i>
                         </div>
                     </div>
-                    <div class="bg-white/20 backdrop-blur-sm rounded-lg p-4 stat-card relative">
-                        <div class="absolute top-4 right-4 stat-icon-button">
-                            <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                                <i class="fa fa-area-chart text-white"></i>
-                            </div>
+                </div>
+                <div class="miniprogram-card p-4 bg-gradient-to-br from-green-50 to-white">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-medium mb-1">今日收益</p>
+                            <p class="text-2xl font-bold text-green-600">¥1,356</p>
                         </div>
-                        <p class="text-white/80 text-sm mb-1">今日收益</p>
-                        <div class="flex items-baseline">
-                            <span class="text-3xl font-bold mr-2">¥1,356</span>
-                            <span class="text-xs text-white/80">元</span>
-                        </div>
-                        <div class="text-xs text-white/90 mt-1 flex items-center">
-                            <i class="fa fa-arrow-up text-green-300 mr-1"></i>较昨日 +¥280 (+26%)
+                        <div class="w-12 h-12 bg-green-500/10 rounded-full flex items-center justify-center">
+                            <i class="fa fa-line-chart text-green-500 text-xl"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
+
+
         <!-- 订单状态筛选 -->
-        <section class="px-4 py-2">
-            <div class="flex border-b border-gray-light">
-                <button class="flex-1 py-3 text-primary font-medium order-filter active relative" data-status="all">
+        <section class="bg-white sticky top-14 z-30 border-b border-gray-light">
+            <div class="flex px-4 py-3 overflow-x-auto whitespace-nowrap -mx-1 scrollbar-hide">
+                <button class="order-filter-btn px-4 py-1.5 rounded-full text-sm font-medium touch-friendly active mr-2" data-status="all" onclick="filterOrders('all')">
                     全部订单
-                    <div class="absolute bottom-0 left-0 w-full h-1 bg-primary"></div>
                 </button>
-                <button class="flex-1 py-3 text-gray-medium font-medium order-filter" data-status="pending">
+                <button class="order-filter-btn px-4 py-1.5 bg-gray-100 rounded-full text-sm font-medium touch-friendly mr-2" data-status="pending" onclick="filterOrders('pending')">
+                    <span class="inline-block w-2 h-2 bg-status-pending rounded-full mr-1.5"></span>
                     待拍摄
                 </button>
-                <button class="flex-1 py-3 text-gray-medium font-medium order-filter" data-status="shooting">
+                <button class="order-filter-btn px-4 py-1.5 bg-gray-100 rounded-full text-sm font-medium touch-friendly mr-2" data-status="shooting" onclick="filterOrders('shooting')">
+                    <span class="inline-block w-2 h-2 bg-status-processing rounded-full mr-1.5"></span>
                     拍摄中
                 </button>
-                <button class="flex-1 py-3 text-gray-medium font-medium order-filter" data-status="completed">
+                <button class="order-filter-btn px-4 py-1.5 bg-gray-100 rounded-full text-sm font-medium touch-friendly" data-status="completed" onclick="filterOrders('completed')">
+                    <span class="inline-block w-2 h-2 bg-status-completed rounded-full mr-1.5"></span>
                     已完成
                 </button>
             </div>
@@ -158,135 +372,180 @@
         </section>
 
         <!-- 订单列表 -->
-        <section class="px-4">
+        <section class="p-4">
             <div class="space-y-4" id="ordersList">
                 <!-- 待拍摄订单 -->
-                <div class="miniprogram-card bg-white p-4 touch-friendly order-item" data-status="pending" onclick="viewOrderDetails('DX20230615001', 'pending')">
-                    <div class="flex justify-between items-start mb-3">
-                        <div>
-                        <div class="flex items-center">
-                            <span class="bg-status-pending/20 text-status-pending text-xs px-2 py-1 rounded-full">待拍摄</span>
-                                <span class="ml-2 text-sm text-gray-medium">订单号：DX20230615001</span>
+                <div class="miniprogram-card bg-white rounded-xl overflow-hidden order-item" data-status="pending" onclick="viewOrderDetails('DX20230615001', 'pending')">
+                    <div class="p-4 border-b border-gray-light">
+                        <div class="flex justify-between items-center mb-3">
+                            <div class="flex items-center">
+                                <h3 class="font-bold text-dark">订单号: DX20230615001</h3>
+                            </div>
+                            <div class="bg-status-pending/20 text-status-pending text-xs px-2 py-1 rounded-full">待拍摄</div>
                         </div>
-                            <div class="text-sm mt-2">客户：张先生 (138****1234)</div>
-                            <div class="text-sm text-gray-medium mt-1">
-                                <i class="fa fa-map-marker mr-1"></i>福州鼓山景区 - 涌泉寺
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-medium">客户信息</span>
+                                <span class="font-medium">张先生 (138****1234)</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-medium">拍摄地点</span>
+                                <span class="font-medium">涌泉寺等8个</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-medium">订单金额</span>
+                                <span class="font-bold text-primary">¥128</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-medium">下单时间</span>
+                                <span>今天 10:30</span>
+                            </div>
+                        </div>
                     </div>
+                    <div class="p-3 bg-gray-50 flex justify-between items-center">
+                        <div class="text-xs text-gray-medium">
+                            
                         </div>
-                        <div class="text-right">
-                            <div class="text-lg font-bold text-primary">¥128</div>
-                            <div class="text-xs text-gray-medium mt-1">今天 10:30</div>
+                        <div class="flex space-x-2">
+                            <button class="px-3 py-1.5 bg-white border border-gray-light text-dark rounded-lg text-sm font-medium touch-friendly" onclick="makePhoneCall('13812341234'); event.stopPropagation();">
+                                <i class="fa fa-phone mr-1"></i>联系客户
+                            </button>
+                            <button class="px-3 py-1.5 bg-primary text-white rounded-lg text-sm font-medium touch-friendly" onclick="startOrder('DX20230615001'); event.stopPropagation();">
+                                一键启动
+                            </button>
                         </div>
-                    </div>
-                    <div class="flex justify-between items-center pt-3 border-t border-gray-light">
-                        <button class="flex-1 bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium touch-friendly mr-2" onclick="startOrder('DX20230615001'); event.stopPropagation();">
-                            一键启动
-                        </button>
-                        <button class="flex-1 bg-white border border-gray-light text-dark px-4 py-2 rounded-lg text-sm font-medium touch-friendly" onclick="makePhoneCall('13812341234'); event.stopPropagation();">
-                            <i class="fa fa-phone mr-1"></i>联系客户
-                        </button>
                     </div>
                 </div>
 
                 <!-- 拍摄中订单 -->
-                <div class="miniprogram-card bg-white p-4 touch-friendly order-item" data-status="shooting" onclick="viewOrderDetails('DX20230615002', 'shooting')">
-                    <div class="flex justify-between items-start mb-3">
-                        <div>
-                        <div class="flex items-center">
-                            <span class="bg-status-processing/20 text-status-processing text-xs px-2 py-1 rounded-full">拍摄中</span>
-                                <span class="ml-2 text-sm text-gray-medium">订单号：DX20230615002</span>
+                <div class="miniprogram-card bg-white rounded-xl overflow-hidden order-item" data-status="shooting" onclick="viewOrderDetails('DX20230615002', 'shooting')">
+                    <div class="p-4 border-b border-gray-light">
+                        <div class="flex justify-between items-center mb-3">
+                            <div class="flex items-center">
+                                <h3 class="font-bold text-dark">订单号: DX20230615002</h3>
+                            </div>
+                            <div class="bg-status-processing/20 text-status-processing text-xs px-2 py-1 rounded-full">拍摄中</div>
                         </div>
-                            <div class="text-sm mt-2">客户：李女士 (139****5678)</div>
-                            <div class="text-sm text-gray-medium mt-1">
-                                <i class="fa fa-map-marker mr-1"></i>福州鼓山景区 - 摩崖石刻
-                    </div>
-                        </div>
-                        <div class="text-right">
-                            <div class="text-lg font-bold text-primary">¥198</div>
-                            <div class="text-xs text-gray-medium mt-1">今天 11:15</div>
-                        </div>
-                        </div>
-                    <div class="mt-2 mb-3">
-                        <div class="flex justify-between text-sm mb-1">
-                            <span class="text-gray-medium">拍摄进度:</span>
-                            <span class="font-medium">2/5</span>
-                    </div>
-                        <div class="bg-gray-light rounded-full h-2 w-full">
-                            <div class="bg-primary h-2 rounded-full" style="width: 40%"></div>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-medium">客户信息</span>
+                                <span class="font-medium">李女士 (139****5678)</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-medium">拍摄地点</span>
+                                <span class="font-medium">摩崖石刻等6个</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-medium">订单金额</span>
+                                <span class="font-bold text-primary">¥198</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-medium">下单时间</span>
+                                <span>今天 11:15</span>
+                            </div>
+                            <div class="mt-2 mb-3">
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-gray-medium">拍摄进度:</span>
+                                    <span class="font-medium">2/5</span>
+                                </div>
+                                <div class="bg-gray-light rounded-full h-2 w-full">
+                                    <div class="bg-primary h-2 rounded-full" style="width: 40%"></div>
                                 </div>
                             </div>
-                    <div class="flex justify-between items-center pt-3 border-t border-gray-light">
-                        <button class="flex-1 bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium touch-friendly mr-2" onclick="continueOrder('DX20230615002'); event.stopPropagation();">
-                            继续拍摄
-                        </button>
-                        <button class="flex-1 bg-gray-400 text-white px-4 py-2 rounded-lg text-sm font-medium touch-friendly" onclick="cancelOrder('DX20230615002'); event.stopPropagation();">
-                            取消订单
-                        </button>
+                        </div>
+                    </div>
+                    <div class="p-3 bg-gray-50 flex justify-between items-center">
+                        <div class="text-xs text-gray-medium">
+                            
+                        </div>
+                        <div class="flex space-x-2">
+                            <button class="px-3 py-1.5 bg-red-500 text-white rounded-lg text-sm font-medium touch-friendly" onclick="cancelOrder('DX20230615002'); event.stopPropagation();">
+                                取消订单
+                            </button>
+                            <button class="px-3 py-1.5 bg-primary text-white rounded-lg text-sm font-medium touch-friendly" onclick="continueOrder('DX20230615002'); event.stopPropagation();">
+                                继续拍摄
+                            </button>
+                        </div>
                     </div>
                 </div>
 
                 <!-- 已完成订单 -->
-                <div class="miniprogram-card bg-white p-4 touch-friendly order-item" data-status="completed" onclick="viewOrderDetails('DX20230615003', 'completed')">
-                    <div class="flex justify-between items-start mb-3">
-                        <div>
-                        <div class="flex items-center">
-                            <span class="bg-status-completed/20 text-status-completed text-xs px-2 py-1 rounded-full">已完成</span>
-                                <span class="ml-2 text-sm text-gray-medium">订单号：DX20230615003</span>
+                <div class="miniprogram-card bg-white rounded-xl overflow-hidden order-item" data-status="completed" onclick="viewOrderDetails('DX20230615003', 'completed')">
+                    <div class="p-4 border-b border-gray-light">
+                        <div class="flex justify-between items-center mb-3">
+                            <div class="flex items-center">
+                                <h3 class="font-bold text-dark">订单号: DX20230615003</h3>
+                            </div>
+                            <div class="bg-status-completed/20 text-status-completed text-xs px-2 py-1 rounded-full">已完成</div>
                         </div>
-                            <div class="text-sm mt-2">客户：王先生 (135****9012)</div>
-                            <!-- 地址信息已移除 -->
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-medium">客户信息</span>
+                                <span class="font-medium">王先生 (135****9012)</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-medium">订单金额</span>
+                                <span class="font-bold text-primary">¥258</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-medium">下单时间</span>
+                                <span>今天 09:20</span>
+                            </div>
+                        </div>
                     </div>
-                        <div class="text-right">
-                            <div class="text-lg font-bold text-primary">¥258</div>
-                            <div class="text-xs text-gray-medium mt-1">今天 09:20</div>
-                        </div>
-                        </div>
-                    <div class="flex justify-between items-center pt-3 border-t border-gray-light">
-                        <button class="flex-1 bg-white border border-primary text-primary px-4 py-2 rounded-lg text-sm font-medium touch-friendly mr-2" onclick="viewCompletedVideo('DX20230615003'); event.stopPropagation();">
+                    <div class="p-3 bg-gray-50 flex justify-end space-x-2">
+                        <button class="px-3 py-1.5 bg-blue-50 text-primary border border-blue-200 rounded-lg text-sm font-medium touch-friendly" onclick="viewCompletedVideo('DX20230615003'); event.stopPropagation();">
                             查看成片
                         </button>
-                        <button class="flex-1 bg-white border border-accent text-accent px-4 py-2 rounded-lg text-sm font-medium touch-friendly" onclick="showValueAddedServices('DX20230615003'); event.stopPropagation();">
+                        <button class="px-3 py-1.5 bg-primary text-white rounded-lg text-sm font-medium touch-friendly" onclick="showValueAddedServices('DX20230615003'); event.stopPropagation();">
                             增值服务
                         </button>
                     </div>
                 </div>
 
-
                 <!-- 增值服务订单范例 -->
-                <div class="miniprogram-card bg-white p-4 touch-friendly order-item" data-status="completed" onclick="viewOrderDetails('DX20230615004', 'completed')">
-                    <div class="flex justify-between items-start mb-3">
-                        <div>
-                        <div class="flex items-center">
-                            <span class="bg-accent/20 text-accent text-xs px-2 py-1 rounded-full">增值服务</span>
-                                <span class="ml-2 text-sm text-gray-medium">订单号：DX20230615004</span>
-                        </div>
-                            <div class="text-sm mt-2">客户：王先生 (135****9012)</div>
-                            <!-- 地址信息已移除 -->
-                    </div>
-                        <div class="text-right">
-                            <div class="text-lg font-bold text-accent">¥350</div>
-                            <div class="text-xs text-gray-medium mt-1">今天 10:15</div>
-                        </div>
-                        </div>
-                    <div class="p-3 bg-gray-light/30 rounded-lg mb-3">
-                        <div class="flex items-center justify-between mb-2">
+                <div class="miniprogram-card bg-white rounded-xl overflow-hidden order-item" data-status="completed" onclick="viewOrderDetails('DX20230615004', 'completed')">
+                    <div class="p-4 border-b border-gray-light">
+                        <div class="flex justify-between items-center mb-3">
                             <div class="flex items-center">
-                                <i class="fa fa-star text-accent mr-2"></i>
-                                <span class="font-medium">已购增值服务</span>
+                                <h3 class="font-bold text-dark">订单号: DX20230615004</h3>
+                            </div>
+                            <div class="bg-accent/20 text-accent text-xs px-2 py-1 rounded-full">增值服务</div>
                         </div>
-                            <span class="text-xs text-gray-medium">共3项</span>
-                    </div>
-                        <div class="flex flex-wrap gap-2">
-                            <span class="bg-white px-2 py-1 rounded text-xs">专业调色 ¥80</span>
-                            <span class="bg-white px-2 py-1 rounded text-xs">配乐剪辑 ¥120</span>
-                            <span class="bg-white px-2 py-1 rounded text-xs">航拍全景 ¥150</span>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-medium">客户信息</span>
+                                <span class="font-medium">王先生 (135****9012)</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-medium">订单金额</span>
+                                <span class="font-bold text-accent">¥350</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-medium">下单时间</span>
+                                <span>今天 10:15</span>
+                            </div>
+                        </div>
+                        <div class="p-3 bg-gray-light/30 rounded-lg mt-3">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center">
+                                    <i class="fa fa-star text-accent mr-2"></i>
+                                    <span class="font-medium">已购增值服务</span>
+                                </div>
+                                <span class="text-xs text-gray-medium">共3项</span>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="bg-white px-2 py-1 rounded text-xs">专业调色 ¥80</span>
+                                <span class="bg-white px-2 py-1 rounded text-xs">配乐剪辑 ¥120</span>
+                                <span class="bg-white px-2 py-1 rounded text-xs">航拍全景 ¥150</span>
+                            </div>
                         </div>
                     </div>
-                    <div class="flex justify-between items-center pt-3 border-t border-gray-light">
-                        <button class="flex-1 bg-white border border-primary text-primary px-4 py-2 rounded-lg text-sm font-medium touch-friendly mr-2" onclick="viewCompletedVideo('DX20230615004'); event.stopPropagation();">
+                    <div class="p-3 bg-gray-50 flex justify-end space-x-2">
+                        <button class="px-3 py-1.5 bg-blue-50 text-primary border border-blue-200 rounded-lg text-sm font-medium touch-friendly" onclick="viewCompletedVideo('DX20230615004'); event.stopPropagation();">
                             查看成片
                         </button>
-                        <button class="flex-1 bg-white border border-accent text-accent px-4 py-2 rounded-lg text-sm font-medium touch-friendly" onclick="downloadVideo('DX20230615004'); event.stopPropagation();">
+                        <button class="px-3 py-1.5 bg-primary text-white rounded-lg text-sm font-medium touch-friendly" onclick="downloadVideo('DX20230615004'); event.stopPropagation();">
                             下载视频
                         </button>
                     </div>
@@ -297,8 +556,8 @@
 
         <!-- 扫码悬浮按钮 -->
         <div class="fixed right-4 bottom-20 z-30">
-            <button id="floatingScanBtn" class="w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center text-2xl shadow-[0_4px_12px_rgba(59,130,246,0.5)] touch-friendly transition-transform duration-200 hover:scale-105 active:scale-95" onclick="scanQRCode()">
-                <i class="fa fa-qrcode"></i>
+            <button id="floatingScanBtn" class="w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center shadow-lg touch-friendly" onclick="scanOrderQRCode()">
+                <i class="fa fa-qrcode text-2xl"></i>
             </button>
         </div>
 
