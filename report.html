@@ -597,58 +597,66 @@
         </section>
         
         <!-- 关键指标 -->
-        <section class="p-4">
-            <div class="grid grid-cols-2 gap-3">
+        <section class="bg-white p-4 border-b border-gray-light">
+            <div class="grid grid-cols-2 gap-4">
                 <!-- 订单量 -->
-                <div class="stat-card card-shadow bg-white p-4">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="stat-label text-sm text-gray-medium">订单量</span>
-                        <div class="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-                            <i class="fa fa-shopping-cart text-primary text-sm"></i>
+                <div class="miniprogram-card p-4 bg-gradient-to-br from-blue-50 to-white">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-medium mb-1">订单量</p>
+                            <p class="text-2xl font-bold text-dark" id="ordersCount">0</p>
+                            <div class="text-xs text-success mt-1">
+                                <i class="fa fa-arrow-up"></i> 今日新增
+                            </div>
                         </div>
-                    </div>
-                    <div class="stat-number text-2xl font-bold text-dark" id="ordersCount">0</div>
-                    <div class="text-xs text-success mt-1">
-                        <i class="fa fa-arrow-up"></i> 今日新增
+                        <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                            <i class="fa fa-shopping-cart text-primary text-xl"></i>
+                        </div>
                     </div>
                 </div>
                 
                 <!-- 拍摄成功率 -->
-                <div class="stat-card card-shadow bg-white p-4">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="stat-label text-sm text-gray-medium">成功率</span>
-                        <div class="w-8 h-8 bg-success/10 rounded-full flex items-center justify-center">
-                            <i class="fa fa-check-circle text-success text-sm"></i>
+                <div class="miniprogram-card p-4 bg-gradient-to-br from-green-50 to-white">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-medium mb-1">成功率</p>
+                            <p class="text-2xl font-bold text-dark" id="successRate">0%</p>
+                            <div class="text-xs text-success mt-1">优秀水平</div>
+                        </div>
+                        <div class="w-12 h-12 bg-success/10 rounded-full flex items-center justify-center">
+                            <i class="fa fa-check-circle text-success text-xl"></i>
                         </div>
                     </div>
-                    <div class="stat-number text-2xl font-bold text-dark" id="successRate">0%</div>
-                    <div class="text-xs text-success mt-1">优秀水平</div>
                 </div>
                 
                 <!-- 总收益 -->
-                <div class="stat-card card-shadow bg-white p-4">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="stat-label text-sm text-gray-medium">收益</span>
-                        <div class="w-8 h-8 bg-warning/10 rounded-full flex items-center justify-center">
-                            <i class="fa fa-yen text-warning text-sm"></i>
+                <div class="miniprogram-card p-4 bg-gradient-to-br from-yellow-50 to-white">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-medium mb-1">收益</p>
+                            <p class="text-2xl font-bold text-dark" id="revenue">¥0</p>
+                            <div class="text-xs text-success mt-1">
+                                <i class="fa fa-arrow-up"></i> 收益增长
+                            </div>
                         </div>
-                    </div>
-                    <div class="stat-number text-2xl font-bold text-dark" id="revenue">¥0</div>
-                    <div class="text-xs text-success mt-1">
-                        <i class="fa fa-arrow-up"></i> 收益增长
+                        <div class="w-12 h-12 bg-warning/10 rounded-full flex items-center justify-center">
+                            <i class="fa fa-yen text-warning text-xl"></i>
+                        </div>
                     </div>
                 </div>
                 
                 <!-- 设备使用率 -->
-                <div class="stat-card card-shadow bg-white p-4">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="stat-label text-sm text-gray-medium">设备使用率</span>
-                        <div class="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-                            <i class="fa fa-battery-three-quarters text-primary text-sm"></i>
+                <div class="miniprogram-card p-4 bg-gradient-to-br from-purple-50 to-white">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-medium mb-1">设备使用率</p>
+                            <p class="text-2xl font-bold text-dark" id="deviceUsage">0%</p>
+                            <div class="text-xs text-gray-medium mt-1">运行正常</div>
+                        </div>
+                        <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                            <i class="fa fa-battery-three-quarters text-primary text-xl"></i>
                         </div>
                     </div>
-                    <div class="stat-number text-2xl font-bold text-dark" id="deviceUsage">0%</div>
-                    <div class="text-xs text-gray-medium mt-1">运行正常</div>
                 </div>
             </div>
         </section>
