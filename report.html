@@ -7,27 +7,22 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- 引入Chart.js用于数据可视化 -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
-
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        primary: '#3B82F6',
+                        primary: '#2563EB',
                         secondary: '#1E40AF',
-                        accent: '#06B6D4',
-                        dark: '#1E293B',
-                        light: '#F8FAFC',
-                        'gray-medium': '#64748B',
-                        'gray-light': '#E2E8F0',
-                        'battery-green': '#10B981',
-                        'battery-yellow': '#FBBF24',
-                        'battery-orange': '#F59E0B',
-                        'battery-red': '#EF4444',
-                        'status-success': '#10B981',
-                        'status-warning': '#F59E0B',
-                        'status-danger': '#EF4444',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        error: '#EF4444',
+                        dark: '#1F2937',
+                        light: '#F9FAFB',
+                        'gray-medium': '#6B7280',
+                        'gray-light': '#E5E7EB',
                     },
                     fontFamily: {
                         inter: ['Inter', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'sans-serif'],
@@ -38,37 +33,472 @@
     </script>
     <style type="text/tailwindcss">
         @layer utilities {
-            .text-shadow {
-                text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            }
             .touch-friendly {
                 touch-action: manipulation;
                 -webkit-tap-highlight-color: transparent;
+                min-height: 44px;
+                min-width: 44px;
             }
             .safe-area-bottom {
                 padding-bottom: constant(safe-area-inset-bottom);
                 padding-bottom: env(safe-area-inset-bottom);
             }
-            .miniprogram-card {
-                box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-                border-radius: 8px;
+            .card-shadow {
+                box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+                border-radius: 12px;
             }
-            .content-container {
-                min-height: calc(100vh - 4rem); /* 4rem is the height of the bottom nav */
-                padding-bottom: calc(4rem + 1rem); /* nav height + extra padding */
+            .period-btn.active {
+                background-color: #2563EB;
+                color: white;
+                box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
             }
             .chart-container {
                 position: relative;
-                height: 200px;
+                height: 180px;
                 width: 100%;
+            }
+            .doughnut-chart {
+                position: relative;
+                height: 140px;
+                width: 140px;
+                margin: 0 auto;
+            }
+            .stat-card {
+                transition: all 0.2s ease;
+            }
+            .stat-card:active {
+                transform: scale(0.98);
+            }
+            /* 长者模式样式 */
+            .elder-mode {
+                font-size: 18px !important;
+            }
+            .elder-mode .stat-number {
+                font-size: 2.5rem !important;
+            }
+            .elder-mode .stat-label {
+                font-size: 1.1rem !important;
+            }
+            .elder-mode .period-btn {
+                font-size: 1.1rem !important;
+                padding: 12px 20px !important;
+            }
+            .elder-mode .nav-text {
+                font-size: 0.9rem !important;
             }
         }
     </style>
+    <script>
+        // 运营报表数据
+        const reportData = {
+            daily: {
+                orders: 15,
+                successRate: 93,
+                revenue: 3200,
+                deviceUsage: 82,
+                batteryLevel: 88,
+                flightTime: 4.2,
+                orderTrend: [8, 12, 10, 15, 18, 14, 15],
+                revenueTrend: [1800, 2400, 2100, 3200, 3600, 2800, 3200],
+                successTrend: [90, 95, 88, 93, 96, 91, 93],
+                deviceTrend: [75, 80, 78, 82, 85, 79, 82],
+                dates: ['9/1', '9/2', '9/3', '9/4', '9/5', '9/6', '9/7'],
+                scenicSpots: [
+                    { name: '涌泉寺', orders: 5, percentage: 33 },
+                    { name: '摩崖石刻', orders: 3, percentage: 20 },
+                    { name: '登山古径', orders: 3, percentage: 20 },
+                    { name: '屴崱峰', orders: 2, percentage: 13 },
+                    { name: '回龙阁', orders: 2, percentage: 14 }
+                ]
+            },
+            weekly: {
+                orders: 98,
+                successRate: 91,
+                revenue: 21800,
+                deviceUsage: 79,
+                batteryLevel: 85,
+                flightTime: 28.5,
+                orderTrend: [45, 98],
+                revenueTrend: [10200, 21800],
+                successTrend: [88, 91],
+                deviceTrend: [76, 79],
+                dates: ['上周', '本周'],
+                scenicSpots: [
+                    { name: '涌泉寺', orders: 32, percentage: 33 },
+                    { name: '摩崖石刻', orders: 20, percentage: 20 },
+                    { name: '登山古径', orders: 19, percentage: 19 },
+                    { name: '屴崱峰', orders: 15, percentage: 15 },
+                    { name: '回龙阁', orders: 12, percentage: 13 }
+                ]
+            },
+            monthly: {
+                orders: 428,
+                successRate: 89,
+                revenue: 96500,
+                deviceUsage: 76,
+                batteryLevel: 82,
+                flightTime: 125.8,
+                orderTrend: [186, 428],
+                revenueTrend: [42800, 96500],
+                successTrend: [86, 89],
+                deviceTrend: [73, 76],
+                dates: ['上月', '本月'],
+                scenicSpots: [
+                    { name: '涌泉寺', orders: 142, percentage: 33 },
+                    { name: '摩崖石刻', orders: 86, percentage: 20 },
+                    { name: '登山古径', orders: 81, percentage: 19 },
+                    { name: '屴崱峰', orders: 64, percentage: 15 },
+                    { name: '回龙阁', orders: 55, percentage: 13 }
+                ]
+            }
+        };
+        
+        // 全局变量
+        let isElderMode = localStorage.getItem('elderMode') === 'true';
+        let currentPeriod = 'daily';
+        let charts = {};
+        
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            // 应用长者模式
+            if (isElderMode) {
+                document.body.classList.add('elder-mode');
+            }
+            
+            // 加载默认数据
+            loadReportData('daily');
+            initCharts('daily');
+        });
+        
+        // 切换报表周期
+        function changePeriod(period) {
+            currentPeriod = period;
+            
+            // 更新按钮状态
+            document.querySelectorAll('.period-btn').forEach(btn => {
+                btn.classList.remove('active');
+                btn.classList.add('bg-gray-100', 'text-gray-700');
+            });
+            
+            const activeBtn = document.querySelector(`[data-period="${period}"]`);
+            if (activeBtn) {
+                activeBtn.classList.add('active');
+                activeBtn.classList.remove('bg-gray-100', 'text-gray-700');
+            }
+            
+            // 加载数据和更新图表
+            loadReportData(period);
+            updateCharts(period);
+        }
+        
+        // 加载报表数据
+        function loadReportData(period) {
+            const data = reportData[period];
+            if (!data) return;
+            
+            // 更新关键指标
+            document.getElementById('ordersCount').textContent = data.orders;
+            document.getElementById('successRate').textContent = data.successRate + '%';
+            document.getElementById('revenue').textContent = '¥' + data.revenue.toLocaleString();
+            document.getElementById('deviceUsage').textContent = data.deviceUsage + '%';
+            
+            // 更新景点分布
+            updateScenicSpots(data.scenicSpots);
+        }
+        
+        // 更新景点分布
+        function updateScenicSpots(spots) {
+            const container = document.getElementById('scenicSpots');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            spots.forEach(spot => {
+                const item = document.createElement('div');
+                item.className = 'flex items-center justify-between py-2';
+                item.innerHTML = `
+                    <div class="flex items-center">
+                        <div class="w-3 h-3 bg-primary rounded-full mr-3"></div>
+                        <span class="text-sm font-medium">${spot.name}</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-16 h-2 bg-gray-200 rounded-full mr-3">
+                            <div class="h-full bg-primary rounded-full" style="width: ${spot.percentage}%">
+                        </div>
+                        <span class="text-sm font-bold text-primary">${spot.orders}</span>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+        
+        // 初始化图表
+        function initCharts(period) {
+            setTimeout(() => {
+                createOrderChart(period);
+                createRevenueChart(period);
+                createSuccessChart(period);
+                createDeviceChart(period);
+            }, 100);
+        }
+        
+        // 更新图表
+        function updateCharts(period) {
+            Object.values(charts).forEach(chart => {
+                if (chart) chart.destroy();
+            });
+            initCharts(period);
+        }
+        
+        // 创建订单趋势图
+        function createOrderChart(period) {
+            const data = reportData[period];
+            const ctx = document.getElementById('orderChart');
+            if (!ctx) return;
+            
+            charts.orderChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.dates,
+                    datasets: [{
+                        label: '订单量',
+                        data: data.orderTrend,
+                        borderColor: '#2563EB',
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'white',
+                            titleColor: '#1F2937',
+                            bodyColor: '#1F2937',
+                            borderColor: '#E5E7EB',
+                            borderWidth: 1
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#6B7280', font: { size: 11 } }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: '#F3F4F6' },
+                            ticks: { color: '#6B7280', font: { size: 11 } }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 创建收益趋势图
+        function createRevenueChart(period) {
+            const data = reportData[period];
+            const ctx = document.getElementById('revenueChart');
+            if (!ctx) return;
+            
+            charts.revenueChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.dates,
+                    datasets: [{
+                        label: '收益',
+                        data: data.revenueTrend,
+                        backgroundColor: '#10B981',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'white',
+                            titleColor: '#1F2937',
+                            bodyColor: '#1F2937',
+                            borderColor: '#E5E7EB',
+                            borderWidth: 1,
+                            callbacks: {
+                                label: (context) => `收益: ¥${context.parsed.y.toLocaleString()}`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#6B7280', font: { size: 11 } }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: '#F3F4F6' },
+                            ticks: { 
+                                color: '#6B7280', 
+                                font: { size: 11 },
+                                callback: (value) => '¥' + value.toLocaleString()
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 创建成功率图
+        function createSuccessChart(period) {
+            const data = reportData[period];
+            const ctx = document.getElementById('successChart');
+            if (!ctx) return;
+            
+            charts.successChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.dates,
+                    datasets: [{
+                        label: '成功率',
+                        data: data.successTrend,
+                        borderColor: '#10B981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'white',
+                            titleColor: '#1F2937',
+                            bodyColor: '#1F2937',
+                            borderColor: '#E5E7EB',
+                            borderWidth: 1,
+                            callbacks: {
+                                label: (context) => `成功率: ${context.parsed.y}%`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#6B7280', font: { size: 11 } }
+                        },
+                        y: {
+                            min: 80,
+                            max: 100,
+                            grid: { color: '#F3F4F6' },
+                            ticks: { 
+                                color: '#6B7280', 
+                                font: { size: 11 },
+                                callback: (value) => value + '%'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 创建设备使用率图
+        function createDeviceChart(period) {
+            const data = reportData[period];
+            const ctx = document.getElementById('deviceChart');
+            if (!ctx) return;
+            
+            charts.deviceChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['使用中', '空闲'],
+                    datasets: [{
+                        data: [data.deviceUsage, 100 - data.deviceUsage],
+                        backgroundColor: ['#2563EB', '#E5E7EB'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '75%',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'white',
+                            titleColor: '#1F2937',
+                            bodyColor: '#1F2937',
+                            borderColor: '#E5E7EB',
+                            borderWidth: 1
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 导出报表
+        function exportReport() {
+            const data = reportData[currentPeriod];
+            let csvContent = "时间,订单量,成功率,收益,设备使用率\n";
+            
+            data.dates.forEach((date, index) => {
+                csvContent += `${date},${data.orderTrend[index]},${data.successTrend[index]}%,${data.revenueTrend[index]},${data.deviceTrend[index]}%\n`;
+            });
+            
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `运营报表_${currentPeriod}_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+            
+            showToast('报表导出成功！');
+        }
+        
+        // 切换长者模式
+        function toggleElderMode() {
+            isElderMode = !isElderMode;
+            localStorage.setItem('elderMode', isElderMode);
+            
+            if (isElderMode) {
+                document.body.classList.add('elder-mode');
+            } else {
+                document.body.classList.remove('elder-mode');
+            }
+            
+            showToast(isElderMode ? '已开启长者模式' : '已关闭长者模式');
+        }
+        
+        // 显示提示消息
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-success text-white px-6 py-3 rounded-lg z-50 transition-all duration-300 shadow-lg';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(-50%) translateY(-10px)';
+                setTimeout(() => {
+                    if (document.body.contains(toast)) {
+                        document.body.removeChild(toast);
+                    }
+                }, 300);
+            }, 2000);
+        }
+        
+        // 页面导航
+        function navigateTo(page) {
+            window.location.href = `${page}.html`;
+        }
+    </script>
 </head>
-<body class="font-inter bg-light text-dark antialiased touch-action-manipulation">
-    <!-- 页面容器 -->
-    <div class="content-container w-full safe-area-bottom">
-        <!-- 头部导航 -->
+<body class="font-inter bg-light text-dark antialiased touch-action-manipulation min-h-screen">
+    <div class="min-h-screen w-full pb-16 safe-area-bottom">
+        <!-- 顶部导航 -->
         <header class="bg-white border-b border-gray-light sticky top-0 z-40">
             <div class="flex items-center justify-between h-14 px-4">
                 <div class="w-8"></div> <!-- 占位元素，保持布局平衡 -->
@@ -76,540 +506,135 @@
                 <div class="w-8"></div> <!-- 占位元素，保持布局平衡 -->
             </div>
         </header>
-
-        <!-- 头部操作区 -->
-        <div class="p-4 bg-white border-b border-gray-light flex justify-between items-center">
-            <button id="exportBtn" class="flex items-center text-primary text-sm">
-                <i class="fa fa-download mr-1"></i>
-                <span>导出报表</span>
-            </button>
-            <button id="dateRangeBtn" class="flex items-center text-gray-medium text-sm">
-                <span>最近7天</span>
-                <i class="fa fa-calendar ml-1"></i>
-            </button>
-        </div>
-
-        <!-- 数据概览 -->
+        
+        <!-- 时间筛选 -->
+        <section class="bg-white sticky top-14 z-30 border-b border-gray-light">
+            <div class="flex px-4 py-3 space-x-2">
+                <button class="period-btn px-4 py-2 rounded-lg text-sm font-medium touch-friendly active" data-period="daily" onclick="changePeriod('daily')">
+                    今日
+                </button>
+                <button class="period-btn px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium touch-friendly" data-period="weekly" onclick="changePeriod('weekly')">
+                    本周
+                </button>
+                <button class="period-btn px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium touch-friendly" data-period="monthly" onclick="changePeriod('monthly')">
+                    本月
+                </button>
+            </div>
+        </section>
+        
+        <!-- 关键指标 -->
         <section class="p-4">
-            <div class="miniprogram-card bg-white p-4">
-                <h2 class="font-bold text-dark mb-4">数据概览</h2>
-                <div class="grid grid-cols-2 gap-4">
-                    <!-- 订单总数 -->
-                    <div class="bg-gray-50 rounded-lg p-3">
-                        <p class="text-sm text-gray-medium mb-1">订单总数</p>
-                        <div class="flex items-baseline">
-                            <h3 class="font-bold text-2xl">28</h3>
-                            <span class="text-xs text-green-500 ml-2">+12.5%</span>
+            <div class="grid grid-cols-2 gap-3">
+                <!-- 订单量 -->
+                <div class="stat-card card-shadow bg-white p-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="stat-label text-sm text-gray-medium">订单量</span>
+                        <div class="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                            <i class="fa fa-shopping-cart text-primary text-sm"></i>
                         </div>
                     </div>
-                    <!-- 总收益 -->
-                    <div class="bg-blue-50 rounded-lg p-3">
-                        <p class="text-sm text-gray-medium mb-1">总收益</p>
-                        <div class="flex items-baseline">
-                            <h3 class="font-bold text-2xl text-primary">¥1,568</h3>
-                            <span class="text-xs text-green-500 ml-2">+8.3%</span>
+                    <div class="stat-number text-2xl font-bold text-dark" id="ordersCount">0</div>
+                    <div class="text-xs text-success mt-1">
+                        <i class="fa fa-arrow-up"></i> 今日新增
+                    </div>
+                </div>
+                
+                <!-- 拍摄成功率 -->
+                <div class="stat-card card-shadow bg-white p-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="stat-label text-sm text-gray-medium">成功率</span>
+                        <div class="w-8 h-8 bg-success/10 rounded-full flex items-center justify-center">
+                            <i class="fa fa-check-circle text-success text-sm"></i>
                         </div>
                     </div>
-                    <!-- 平均客单价 -->
-                    <div class="bg-yellow-50 rounded-lg p-3">
-                        <p class="text-sm text-gray-medium mb-1">平均客单价</p>
-                        <div class="flex items-baseline">
-                            <h3 class="font-bold text-2xl">¥56</h3>
-                            <span class="text-xs text-green-500 ml-2">+5.2%</span>
+                    <div class="stat-number text-2xl font-bold text-dark" id="successRate">0%</div>
+                    <div class="text-xs text-success mt-1">优秀水平</div>
+                </div>
+                
+                <!-- 总收益 -->
+                <div class="stat-card card-shadow bg-white p-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="stat-label text-sm text-gray-medium">收益</span>
+                        <div class="w-8 h-8 bg-warning/10 rounded-full flex items-center justify-center">
+                            <i class="fa fa-yen text-warning text-sm"></i>
                         </div>
                     </div>
-                    <!-- 拍摄成功率 -->
-                    <div class="bg-green-50 rounded-lg p-3">
-                        <p class="text-sm text-gray-medium mb-1">拍摄成功率</p>
-                        <div class="flex items-baseline">
-                            <h3 class="font-bold text-2xl text-green-500">92.3%</h3>
-                            <span class="text-xs text-green-500 ml-2">+2.1%</span>
+                    <div class="stat-number text-2xl font-bold text-dark" id="revenue">¥0</div>
+                    <div class="text-xs text-success mt-1">
+                        <i class="fa fa-arrow-up"></i> 收益增长
+                    </div>
+                </div>
+                
+                <!-- 设备使用率 -->
+                <div class="stat-card card-shadow bg-white p-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="stat-label text-sm text-gray-medium">设备使用率</span>
+                        <div class="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                            <i class="fa fa-battery-three-quarters text-primary text-sm"></i>
                         </div>
+                    </div>
+                    <div class="stat-number text-2xl font-bold text-dark" id="deviceUsage">0%</div>
+                    <div class="text-xs text-gray-medium mt-1">运行正常</div>
+                </div>
+            </div>
+        </section>
+        
+
+        
+        <!-- 图表区域 -->
+        <section class="px-4 pb-4">
+            <div class="space-y-4">
+                <!-- 订单趋势 -->
+                <div class="card-shadow bg-white rounded-xl p-4">
+                    <h3 class="font-bold text-dark mb-3">订单趋势</h3>
+                    <div class="chart-container">
+                        <canvas id="orderChart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- 收益趋势 -->
+                <div class="card-shadow bg-white rounded-xl p-4">
+                    <h3 class="font-bold text-dark mb-3">收益趋势</h3>
+                    <div class="chart-container">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+                
+
+                
+                <!-- 景点拍摄分布 -->
+                <div class="card-shadow bg-white rounded-xl p-4">
+                    <h3 class="font-bold text-dark mb-3">景点拍摄分布</h3>
+                    <div class="space-y-2" id="scenicSpots">
+                        <!-- 动态生成内容 -->
                     </div>
                 </div>
             </div>
         </section>
+        
 
-        <!-- 每日订单量统计 -->
-        <section class="p-4">
-            <div class="miniprogram-card bg-white p-4">
-                <h2 class="font-bold text-dark mb-4">每日订单量统计</h2>
-                <div class="chart-container">
-                    <canvas id="ordersChart"></canvas>
-                </div>
-            </div>
-        </section>
-
-        <!-- 收益数据展示 -->
-        <section class="p-4">
-            <div class="miniprogram-card bg-white p-4">
-                <h2 class="font-bold text-dark mb-4">收益数据展示</h2>
-                <div class="chart-container">
-                    <canvas id="revenueChart"></canvas>
-                </div>
-                <div class="grid grid-cols-3 gap-3 mt-4">
-                    <div class="bg-blue-50 rounded-lg p-2 text-center">
-                        <p class="text-xs text-gray-medium mb-1">日均收益</p>
-                        <h3 class="font-bold text-lg text-primary">¥224</h3>
-                    </div>
-                    <div class="bg-blue-50 rounded-lg p-2 text-center">
-                        <p class="text-xs text-gray-medium mb-1">最高收益日</p>
-                        <h3 class="font-bold text-lg text-primary">¥356</h3>
-                    </div>
-                    <div class="bg-blue-50 rounded-lg p-2 text-center">
-                        <p class="text-xs text-gray-medium mb-1">最低收益日</p>
-                        <h3 class="font-bold text-lg text-primary">¥158</h3>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 设备使用率统计 -->
-        <section class="p-4">
-            <div class="miniprogram-card bg-white p-4">
-                <h2 class="font-bold text-dark mb-4">设备使用率统计</h2>
-                <div class="chart-container">
-                    <canvas id="usageChart"></canvas>
-                </div>
-                <div class="grid grid-cols-3 gap-3 mt-4">
-                    <div class="bg-green-50 rounded-lg p-2 text-center">
-                        <p class="text-xs text-gray-medium mb-1">平均使用率</p>
-                        <h3 class="font-bold text-lg text-green-500">68.5%</h3>
-                    </div>
-                    <div class="bg-green-50 rounded-lg p-2 text-center">
-                        <p class="text-xs text-gray-medium mb-1">最高使用率</p>
-                        <h3 class="font-bold text-lg text-green-500">89.2%</h3>
-                    </div>
-                    <div class="bg-green-50 rounded-lg p-2 text-center">
-                        <p class="text-xs text-gray-medium mb-1">最低使用率</p>
-                        <h3 class="font-bold text-lg text-green-500">42.7%</h3>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 底部导航 -->
-        <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-light z-30 safe-area-bottom">
+        
+        <!-- 底部导航栏 -->
+        <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-light z-50 safe-area-bottom">
             <div class="flex justify-around items-center h-16">
-                <a href="order.html" class="flex flex-col items-center justify-center text-gray-medium touch-friendly">
-                    <i class="fa fa-list-alt text-xl mb-1"></i>
-                    <span class="text-xs">订单</span>
-                </a>
-                <a href="device.html" class="flex flex-col items-center justify-center text-gray-medium touch-friendly">
-                    <i class="fa fa-cube text-xl mb-1"></i>
-                    <span class="text-xs">设备</span>
-                </a>
-                <a href="report.html" class="flex flex-col items-center justify-center text-primary touch-friendly">
-                    <i class="fa fa-line-chart text-xl mb-1"></i>
-                    <span class="text-xs">报表</span>
-                </a>
-                <a href="profile.html" class="flex flex-col items-center justify-center text-gray-medium touch-friendly">
-                    <i class="fa fa-user text-xl mb-1"></i>
-                    <span class="text-xs">我的</span>
-                </a>
+                <button class="tab-item flex flex-col items-center justify-center text-gray-medium touch-friendly py-2" onclick="navigateTo('order')">
+                    <i class="fa fa-shopping-cart text-lg mb-1"></i>
+                    <span class="nav-text text-xs">订单</span>
+                </button>
+                <button class="tab-item flex flex-col items-center justify-center text-gray-medium touch-friendly py-2" onclick="navigateTo('device')">
+                    <i class="fa fa-cogs text-lg mb-1"></i>
+                    <span class="nav-text text-xs">设备</span>
+                </button>
+                <button class="tab-item flex flex-col items-center justify-center text-primary touch-friendly py-2 active">
+                    <i class="fa fa-bar-chart text-lg mb-1"></i>
+                    <span class="nav-text text-xs">报表</span>
+                </button>
+                <button class="tab-item flex flex-col items-center justify-center text-gray-medium touch-friendly py-2" onclick="navigateTo('profile')">
+                    <i class="fa fa-user text-lg mb-1"></i>
+                    <span class="nav-text text-xs">我的</span>
+                </button>
             </div>
         </nav>
     </div>
-
-    <!-- 日期范围选择弹窗 -->
-    <div id="dateRangeModal" class="fixed inset-0 z-50 flex items-end justify-center bg-black/50 hidden">
-        <div class="bg-white rounded-t-lg w-full max-h-[80vh] overflow-y-auto">
-            <div class="p-5 border-b border-gray-light flex justify-between items-center">
-                <h3 class="font-bold text-lg text-dark">选择日期范围</h3>
-                <button id="closeDateRangeBtn" class="text-gray-medium">
-                    <i class="fa fa-times text-xl"></i>
-                </button>
-            </div>
-            <div class="p-5 space-y-4">
-                <div class="space-y-2">
-                    <label class="block text-sm font-medium text-dark">开始日期</label>
-                    <input type="date" id="startDate" class="w-full p-3 border border-gray-light rounded-lg focus:outline-none" value="2025-08-28">
-                </div>
-                <div class="space-y-2">
-                    <label class="block text-sm font-medium text-dark">结束日期</label>
-                    <input type="date" id="endDate" class="w-full p-3 border border-gray-light rounded-lg focus:outline-none" value="2025-09-03">
-                </div>
-                <div class="flex space-x-3">
-                    <button id="resetDateBtn" class="flex-1 bg-gray-light text-gray-medium py-3 rounded-lg font-medium touch-friendly">
-                        重置
-                    </button>
-                    <button id="confirmDateBtn" class="flex-1 bg-primary text-white py-3 rounded-lg font-medium touch-friendly">
-                        确认
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- JavaScript交互代码 -->
-    <script src="app.js"></script>
-    <script>
-        // 页面加载后初始化
-        window.addEventListener('load', function() {
-            // 初始化图表
-            initCharts();
-            
-            // 绑定日期范围选择事件
-            document.getElementById('dateRangeBtn').addEventListener('click', function() {
-                document.getElementById('dateRangeModal').classList.remove('hidden');
-            });
-            
-            // 关闭日期范围选择弹窗
-            document.getElementById('closeDateRangeBtn').addEventListener('click', function() {
-                document.getElementById('dateRangeModal').classList.add('hidden');
-            });
-            
-            // 确认日期范围选择
-            document.getElementById('confirmDateBtn').addEventListener('click', function() {
-                const startDate = document.getElementById('startDate').value;
-                const endDate = document.getElementById('endDate').value;
-                
-                if (new Date(startDate) > new Date(endDate)) {
-                    showToast('开始日期不能晚于结束日期');
-                    return;
-                }
-                
-                // 更新日期显示
-                const formattedStartDate = formatDate(startDate);
-                const formattedEndDate = formatDate(endDate);
-                document.getElementById('dateRangeBtn').querySelector('span').textContent = 
-                    `${formattedStartDate}至${formattedEndDate}`;
-                
-                // 关闭弹窗
-                document.getElementById('dateRangeModal').classList.add('hidden');
-                
-                // 模拟刷新数据
-                showToast('数据更新中...');
-                setTimeout(function() {
-                    refreshCharts(startDate, endDate);
-                    showToast('数据已更新');
-                }, 1000);
-            });
-            
-            // 重置日期
-            document.getElementById('resetDateBtn').addEventListener('click', function() {
-                const today = new Date();
-                const lastWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-                
-                document.getElementById('startDate').value = formatDateInput(lastWeek);
-                document.getElementById('endDate').value = formatDateInput(today);
-            });
-            
-            // 导出报表按钮点击事件
-            document.getElementById('exportBtn').addEventListener('click', function() {
-                showToast('报表导出中...');
-                setTimeout(function() {
-                    showToast('报表导出成功');
-                }, 1000);
-            });
-        });
-        
-        // 初始化图表
-        function initCharts() {
-            // 每日订单量图表
-            const ordersCtx = document.getElementById('ordersChart').getContext('2d');
-            const ordersChart = new Chart(ordersCtx, {
-                type: 'line',
-                data: {
-                    labels: ['8/28', '8/29', '8/30', '8/31', '9/1', '9/2', '9/3'],
-                    datasets: [{
-                        label: '订单量',
-                        data: [3, 5, 4, 6, 2, 4, 4],
-                        borderColor: '#3B82F6',
-                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                        tension: 0.4,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            mode: 'index',
-                            intersect: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                color: 'rgba(0, 0, 0, 0.05)'
-                            }
-                        },
-                        x: {
-                            grid: {
-                                display: false
-                            }
-                        }
-                    }
-                }
-            });
-            
-            // 收益数据图表
-            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
-            const revenueChart = new Chart(revenueCtx, {
-                type: 'bar',
-                data: {
-                    labels: ['8/28', '8/29', '8/30', '8/31', '9/1', '9/2', '9/3'],
-                    datasets: [{
-                        label: '收益(元)',
-                        data: [158, 256, 208, 356, 182, 245, 163],
-                        backgroundColor: '#3B82F6',
-                        borderRadius: 4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                color: 'rgba(0, 0, 0, 0.05)'
-                            }
-                        },
-                        x: {
-                            grid: {
-                                display: false
-                            }
-                        }
-                    }
-                }
-            });
-            
-            // 设备使用率图表
-            const usageCtx = document.getElementById('usageChart').getContext('2d');
-            const usageChart = new Chart(usageCtx, {
-                type: 'line',
-                data: {
-                    labels: ['8/28', '8/29', '8/30', '8/31', '9/1', '9/2', '9/3'],
-                    datasets: [{
-                        label: '使用率(%)',
-                        data: [65, 78, 89, 72, 63, 42, 58],
-                        borderColor: '#10B981',
-                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                        tension: 0.4,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 100,
-                            grid: {
-                                color: 'rgba(0, 0, 0, 0.05)'
-                            }
-                        },
-                        x: {
-                            grid: {
-                                display: false
-                            }
-                        }
-                    }
-                }
-            });
-        }
-        
-        // 刷新图表数据
-        function refreshCharts(startDate, endDate) {
-            // 这里应该是根据日期范围从服务器获取新数据
-            // 为了演示，我们使用随机生成的数据
-            const ordersCtx = document.getElementById('ordersChart').getContext('2d');
-            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
-            const usageCtx = document.getElementById('usageChart').getContext('2d');
-            
-            // 销毁旧图表
-            Chart.getChart(ordersCtx)?.destroy();
-            Chart.getChart(revenueCtx)?.destroy();
-            Chart.getChart(usageCtx)?.destroy();
-            
-            // 生成日期标签
-            const dateLabels = generateDateLabels(startDate, endDate);
-            
-            // 重新初始化图表
-            new Chart(ordersCtx, {
-                type: 'line',
-                data: {
-                    labels: dateLabels,
-                    datasets: [{
-                        label: '订单量',
-                        data: generateRandomData(dateLabels.length, 2, 7),
-                        borderColor: '#3B82F6',
-                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                        tension: 0.4,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                color: 'rgba(0, 0, 0, 0.05)'
-                            }
-                        },
-                        x: {
-                            grid: {
-                                display: false
-                            }
-                        }
-                    }
-                }
-            });
-            
-            new Chart(revenueCtx, {
-                type: 'bar',
-                data: {
-                    labels: dateLabels,
-                    datasets: [{
-                        label: '收益(元)',
-                        data: generateRandomData(dateLabels.length, 150, 350),
-                        backgroundColor: '#3B82F6',
-                        borderRadius: 4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                color: 'rgba(0, 0, 0, 0.05)'
-                            }
-                        },
-                        x: {
-                            grid: {
-                                display: false
-                            }
-                        }
-                    }
-                }
-            });
-            
-            new Chart(usageCtx, {
-                type: 'line',
-                data: {
-                    labels: dateLabels,
-                    datasets: [{
-                        label: '使用率(%)',
-                        data: generateRandomData(dateLabels.length, 40, 90),
-                        borderColor: '#10B981',
-                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                        tension: 0.4,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 100,
-                            grid: {
-                                color: 'rgba(0, 0, 0, 0.05)'
-                            }
-                        },
-                        x: {
-                            grid: {
-                                display: false
-                            }
-                        }
-                    }
-                }
-            });
-        }
-        
-        // 格式化日期为显示格式
-        function formatDate(dateString) {
-            const date = new Date(dateString);
-            return `${date.getMonth() + 1}/${date.getDate()}`;
-        }
-        
-        // 格式化日期为输入格式
-        function formatDateInput(date) {
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
-        }
-        
-        // 生成日期标签数组
-        function generateDateLabels(startDate, endDate) {
-            const start = new Date(startDate);
-            const end = new Date(endDate);
-            const labels = [];
-            
-            const current = new Date(start);
-            while (current <= end) {
-                labels.push(`${current.getMonth() + 1}/${current.getDate()}`);
-                current.setDate(current.getDate() + 1);
-            }
-            
-            return labels;
-        }
-        
-        // 生成随机数据
-        function generateRandomData(count, min, max) {
-            return Array.from({length: count}, () => Math.floor(Math.random() * (max - min + 1)) + min);
-        }
-        
-        // 显示提示信息
-        function showToast(message) {
-            // 如果app.js中已实现showToast函数，则使用它
-            if (typeof window.showToast === 'function') {
-                window.showToast(message);
-                return;
-            }
-            
-            // 否则使用自定义实现
-            const toast = document.createElement('div');
-            toast.className = 'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black/70 text-white px-4 py-2 rounded-lg z-50';
-            toast.textContent = message;
-            document.body.appendChild(toast);
-            
-            setTimeout(() => {
-                toast.classList.add('opacity-0', 'transition-opacity', 'duration-300');
-                setTimeout(() => {
-                    document.body.removeChild(toast);
-                }, 300);
-            }, 2000);
-        }
-    </script>
 </body>
 </html>

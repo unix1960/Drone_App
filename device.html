@@ -120,9 +120,7 @@
         </header>
 
         <!-- 设备状态概览 -->
-        <section class="p-4">
-            <div class="miniprogram-card bg-white p-4">
-                <h2 class="font-bold text-dark mb-4">设备状态概览</h2>
+        <section class="p-4 bg-white">
                 <div class="grid grid-cols-4 gap-3">
                     <!-- 总数 -->
                     <div class="bg-blue-50 rounded-xl p-4 text-center hover:shadow-md transition-shadow cursor-pointer filter-item active" data-status="all">
@@ -157,7 +155,6 @@
                         <p class="text-xs text-gray-medium">离线</p>
                     </div>
                 </div>
-            </div>
         </section>
 
         <!-- 设备筛选区域已移除 -->
@@ -252,6 +249,68 @@
                 <h3 class="font-bold text-lg mb-2">绑定成功</h3>
                 <p class="text-gray-medium mb-6">无人机设备已成功绑定</p>
                 <button id="successConfirmBtn" class="w-full bg-primary text-white py-3 rounded-lg font-medium">
+                    确定
+                </button>
+            </div>
+        </div>
+
+        <!-- 维修请求弹窗 -->
+        <div id="repairModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 hidden">
+            <div class="bg-white rounded-lg w-full max-w-md mx-4 p-5">
+                <div class="p-5 border-b border-gray-light flex justify-between items-center">
+                    <h3 class="font-bold text-lg text-dark">一键维修</h3>
+                    <button onclick="closeRepairModal()" class="text-gray-medium">
+                        <i class="fa fa-times text-xl"></i>
+                    </button>
+                </div>
+                <div class="p-5 space-y-4">
+                    <div id="repairDeviceInfo" class="bg-blue-50 p-3 rounded-lg text-center">
+                        <!-- 设备信息将通过JavaScript动态填充 -->
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-dark mb-2">故障类型</label>
+                        <select id="faultType" class="w-full p-3 border border-gray-light rounded-lg focus:outline-none">
+                            <option value="battery">电池问题</option>
+                            <option value="camera">摄像头问题</option>
+                            <option value="motor">电机问题</option>
+                            <option value="connection">连接问题</option>
+                            <option value="other">其他问题</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-dark mb-2">故障描述</label>
+                        <textarea id="faultDescription" rows="4" class="w-full p-3 border border-gray-light rounded-lg focus:outline-none" placeholder="请详细描述设备故障情况..."></textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-dark mb-2">联系方式</label>
+                        <input type="text" id="contactPhone" class="w-full p-3 border border-gray-light rounded-lg focus:outline-none" placeholder="请输入您的联系电话" value="13800138000">
+                    </div>
+                    
+                    <div class="flex items-center">
+                        <input type="checkbox" id="keepDevicePowered" class="w-4 h-4 mr-2" checked>
+                        <label for="keepDevicePowered" class="text-sm text-gray-medium">保持设备通电等待技术支持</label>
+                    </div>
+                </div>
+                <div class="p-4 border-t border-gray-light">
+                    <button id="submitRepairBtn" class="w-full bg-primary text-white py-3 rounded-lg font-medium touch-friendly">
+                        提交维修请求
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 维修请求成功提示 -->
+        <div id="repairSuccessModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 hidden">
+            <div class="bg-white rounded-lg w-full max-w-md mx-4 p-6 text-center">
+                <div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fa fa-check text-white text-2xl"></i>
+                </div>
+                <h3 class="font-bold text-lg mb-2">维修请求已提交</h3>
+                <p class="text-gray-medium mb-6">技术支持将尽快与您联系，请保持设备通电并等待</p>
+                <button id="repairSuccessConfirmBtn" class="w-full bg-primary text-white py-3 rounded-lg font-medium">
                     确定
                 </button>
             </div>
@@ -633,7 +692,7 @@
                 const statusClass = getStatusClass(device.status);
                 
                 const deviceItem = document.createElement('div');
-                deviceItem.className = 'drone-item miniprogram-card bg-white rounded-lg overflow-hidden';
+                deviceItem.className = 'drone-item miniprogram-card bg-white rounded-lg overflow-hidden mt-4';
                 deviceItem.innerHTML = `
                     <div class="p-4">
                         <div class="flex items-center justify-between mb-4">
@@ -836,8 +895,8 @@
                 </div>
                 
                 <div class="mt-6">
-                            <button class="w-full bg-primary text-white py-3 rounded-lg font-medium touch-friendly" onclick="closeDeviceDetails(); showBindingModal('${device.id}')">
-                                <i class="fa fa-plus mr-1"></i>无人机绑定
+                            <button class="w-full bg-primary text-white py-3 rounded-lg font-medium touch-friendly" onclick="handleOneClickRepair('${device.id}')">
+                                <i class="fa fa-wrench mr-1"></i>一键维修
                             </button>
                         </div>
             `;
@@ -850,12 +909,94 @@
             document.getElementById('deviceDetailsModal').classList.add('hidden');
         }
 
+        // 一键维修功能
+        function handleOneClickRepair(deviceId) {
+            const device = devices.find(d => d.id === deviceId);
+            if (!device) return;
+            
+            // 填充设备信息
+            const repairDeviceInfo = document.getElementById('repairDeviceInfo');
+            repairDeviceInfo.innerHTML = `
+                <p class="text-primary font-medium">${device.name}</p>
+                <p class="text-xs text-gray-medium mt-1">序列号: ${device.serialNumber}</p>
+            `;
+            
+            // 显示维修请求弹窗
+            document.getElementById('repairModal').classList.remove('hidden');
+            
+            // 关闭设备详情弹窗
+            closeDeviceDetails();
+        }
+        
+        // 关闭维修请求弹窗
+        function closeRepairModal() {
+            document.getElementById('repairModal').classList.add('hidden');
+            // 重置表单
+            document.getElementById('faultType').value = 'battery';
+            document.getElementById('faultDescription').value = '';
+            document.getElementById('contactPhone').value = '';
+            document.getElementById('keepDevicePowered').checked = true;
+        }
+        
+        // 提交维修请求
+        document.getElementById('submitRepairBtn').addEventListener('click', function() {
+            const faultType = document.getElementById('faultType').value;
+            const faultDescription = document.getElementById('faultDescription').value;
+            const contactPhone = document.getElementById('contactPhone').value;
+            const keepDevicePowered = document.getElementById('keepDevicePowered').checked;
+            
+            // 简单验证
+            if (!contactPhone) {
+                alert('请输入您的联系电话');
+                return;
+            }
+            
+            // 获取当前显示的设备信息
+            const deviceInfoText = document.getElementById('repairDeviceInfo').querySelector('p').textContent;
+            const device = devices.find(d => d.name === deviceInfoText);
+            
+            if (device) {
+                // 更新设备状态为维护中
+                device.status = 'maintenance';
+                
+                // 重新渲染设备列表
+                renderDeviceList();
+                updateDeviceStats();
+            }
+            
+            // 关闭维修请求弹窗
+            closeRepairModal();
+            
+            // 显示维修请求成功提示
+            document.getElementById('repairSuccessModal').classList.remove('hidden');
+            
+            // 这里可以添加实际的维修请求API调用逻辑
+            console.log(`发送维修请求:`, {
+                deviceName: deviceInfoText,
+                faultType,
+                faultDescription,
+                contactPhone,
+                keepDevicePowered
+            });
+        });
+        
+        // 关闭维修请求成功提示
+        document.getElementById('repairSuccessConfirmBtn').addEventListener('click', function() {
+            document.getElementById('repairSuccessModal').classList.add('hidden');
+        });
+        
         // 点击弹窗外部关闭
         window.addEventListener('click', (e) => {
-            if (e.target === document.getElementById('bindingModal') || e.target === document.getElementById('deviceDetailsModal') || e.target === document.getElementById('bindingSuccessModal')) {
+            if (e.target === document.getElementById('bindingModal') || 
+                e.target === document.getElementById('deviceDetailsModal') || 
+                e.target === document.getElementById('bindingSuccessModal') ||
+                e.target === document.getElementById('repairModal') ||
+                e.target === document.getElementById('repairSuccessModal')) {
                 closeBindingModal();
                 closeDeviceDetails();
                 document.getElementById('bindingSuccessModal').classList.add('hidden');
+                closeRepairModal();
+                document.getElementById('repairSuccessModal').classList.add('hidden');
             }
         });
 
@@ -867,6 +1008,12 @@
             e.stopPropagation();
         });
         document.getElementById('bindingSuccessModal').addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+        document.getElementById('repairModal').addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+        document.getElementById('repairSuccessModal').addEventListener('click', (e) => {
             e.stopPropagation();
         });
     </script>
