@@ -42,27 +42,9 @@
             setTimeout(() => {
                 hideLoading();
                 
-                // 模拟扫码成功识别到订单
-                const scannedOrder = {
-                    orderId: 'DX' + Date.now().toString().slice(-8),
-                    scenicSpot: '鼓山风景游览区',
-                    shootingType: '全景航拍',
-                    amount: '¥268',
-                    createTime: new Date().toLocaleString('zh-CN')
-                };
-                
-                // 显示订单信息并询问是否接单
-                if (confirm(`扫码成功！\n\n订单信息：\n订单号: ${scannedOrder.orderId}\n拍摄景点: ${scannedOrder.scenicSpot}\n拍摄内容: ${scannedOrder.shootingType}\n订单金额: ${scannedOrder.amount}\n\n是否接单？`)) {
-                    // 更新订单状态为拍摄中
-                    showToast('订单已接单，状态更新为拍摄中');
-                    
-                    // 这里可以添加实际的接单API调用
-                    console.log('用户确认接单，订单号:', scannedOrder.orderId);
-                    
-                    // 模拟添加新订单到列表
-                    addNewOrderToList(scannedOrder);
-                }
-            }, 1500);
+                // 直接跳转到订单跟踪页面
+                window.location.href = 'order-tracking.html';
+            }, 500);
         }
         
         // 生成新订单
@@ -298,10 +280,10 @@
     <div class="content-container w-full safe-area-bottom">
         <!-- 头部导航 -->
         <header class="bg-white border-b border-gray-light sticky top-0 z-40">
-            <div class="flex items-center justify-between h-14 px-4">
-                <h1 class="font-bold text-dark">订单管理</h1>
+            <div class="flex items-center h-14 px-4">
+                <div class="w-8"></div> <!-- 占位元素，保持布局平衡 -->
+                <h1 class="font-bold text-dark flex-1 text-center">订单管理</h1>
                 <div class="flex space-x-3">
-
                     <button class="text-gray-medium touch-friendly" onclick="location.href='notifications.html'">
                         <i class="fa fa-bell text-xl"></i>
                         <span class="absolute top-3 right-3 w-2 h-2 bg-red-500 rounded-full"></span>
